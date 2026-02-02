@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "sources": [
+    {
+      "id": "anthropic",
+      "name": "Anthropic Official Skills",
+      "kind": "git",
+      "enabled": true,
+      "repo": "https://github.com/anthropics/skills.git",
+      "openskillsRef": "anthropics/skills"
+    },
+    {
+      "id": "wayne",
+      "name": "Wayne Skills",
+      "kind": "git",
+      "enabled": true,
+      "repo": "https://github.com/wangyendt/wayne-skills.git",
+      "openskillsRef": "wangyendt/wayne-skills"
+    },
+    {
+      "id": "superpowers",
+      "name": "Obra Superpowers",
+      "kind": "git",
+      "enabled": true,
+      "repo": "https://github.com/obra/superpowers.git",
+      "openskillsRef": "obra/superpowers"
+    },
+    {
+      "id": "awesome-claude-skills",
+      "name": "Awesome Claude Skills (ComposioHQ)",
+      "kind": "git",
+      "enabled": true,
+      "repo": "https://github.com/ComposioHQ/awesome-claude-skills.git",
+      "openskillsRef": "ComposioHQ/awesome-claude-skills"
+    }
+  ]
+}
+
