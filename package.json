@@ -1,0 +1,23 @@
+{
+  "name": "skillmanager",
+  "version": "1.0.0",
+  "description": "A skill manager integrating diverse skills from Anthropic, third-party GitHub repositories and the Wayne-Skills GitHub repository",
+  "keywords": [
+    "skillmanager"
+  ],
+  "homepage": "https://github.com/wangyendt/skillmanager#readme",
+  "bugs": {
+    "url": "https://github.com/wangyendt/skillmanager/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangyendt/skillmanager.git"
+  },
+  "license": "MIT",
+  "author": "Wayne",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
