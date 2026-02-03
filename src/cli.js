@@ -94,7 +94,7 @@ async function main() {
   config
     .command('set-remote-profile-url')
     .description('设置远端 profile URL（用于 config push/pull）。')
-    .argument('<url>', '例如 https://<bucket>.<region>.aliyuncs.com/skillmanager_profile.json')
+    .argument('<url>', '例如 https://<bucket>.<region>.aliyuncs.com/skillmanager/')
     .action(async (url) => {
       await setRemoteProfileUrlCmd(url);
     });
