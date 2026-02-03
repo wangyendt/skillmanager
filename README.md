@@ -19,12 +19,12 @@ skillmanager install
 npx @wang121ye/skillmanager install
 ```
 
-> 说明：你最初写的 `npx skillmanager bootstrap` 只有在发布“非 scope 包名”时才成立。  
+> 说明：你最初写的 `npx skillmanager bootstrap` 只有在发布"非 scope 包名"时才成立。  
 > 现在按 scoped 包发布为 `@wang121ye/skillmanager`，对应 npx 用法是 `npx @wang121ye/skillmanager ...`，但执行的命令名仍然叫 `skillmanager`（由 `bin` 决定）。
 
 ## 关键能力
 
-### 1) 一键安装（默认装“全部来源的全部 skills”）
+### 1) 一键安装（默认装"全部来源的全部 skills"）
 
 ```bash
 skillmanager install
@@ -59,34 +59,67 @@ skillmanager install
 SKILLMANAGER_PROFILE=laptop skillmanager webui
 ```
 
-## profile 配置的“上传/下载”（换电脑同步）
+## 配置同步：换电脑快速部署
 
-你可以把某个 profile 上传到一个远端 URL（例如 OSS 对象地址），另一台电脑再 pull 回来。
+`skillmanager` 支持将配置上传到云端（如阿里云 OSS、AWS S3 等），换电脑时一键拉取，实现配置同步。
 
-> 安全提示：**开放公共写权限非常危险**，任何人都可以篡改你的 profile。更安全的做法是使用签名 URL、私有桶 + 凭证、或 Git 私有仓库。
+**同步内容包括：**
+- ✅ `sources.json` - 所有 skills 来源仓库配置
+- ✅ `profiles/[profile].json` - 选中的 skills 列表
 
-### 1) 设置远端 URL（只需一次）
+> 安全提示：**开放公共写权限非常危险**，任何人都可以篡改你的配置。更安全的做法是使用签名 URL、私有桶 + 凭证、或 Git 私有仓库。
+
+### 1) 设置远端基础 URL（只需一次）
 
 ```bash
-skillmanager config set-remote-profile-url https://<bucket>.<region>.aliyuncs.com/skillmanager_profile.json
+skillmanager config set-remote-profile-url https://<bucket>.<region>.aliyuncs.com/skillmanager/
 ```
+
+注意：
+- URL 是**基础路径**（以 `/` 结尾），工具会自动拼接 `sources.json` 和 `profiles/[profile].json`
+- 需要在云存储服务中设置相应目录的读写权限
+
+**阿里云 OSS 权限配置示例：**
+
+在 OSS 控制台的 "Bucket 授权策略" 中添加：
+- 授权资源：`your-bucket/skillmanager/*` （注意 `/*` 通配符）
+- 授权操作：读/写（或 `PutObject`、`GetObject`）
 
 你也可以不写入本地配置，改用环境变量（更适合 CI/临时机器）：
 
 ```bash
-SKILLMANAGER_PROFILE_URL=https://<bucket>.<region>.aliyuncs.com/skillmanager_profile.json
+export SKILLMANAGER_PROFILE_URL=https://<bucket>.<region>.aliyuncs.com/skillmanager/
 ```
 
-### 2) 上传当前 profile
+### 2) 推送配置到云端
 
 ```bash
+# 使用默认 profile
+skillmanager config push
+
+# 指定 profile 名称
 skillmanager config push --profile laptop
 ```
 
-### 3) 新电脑下载并写入本地 profile
+**推送内容：**
+- `sources.json` → `https://...com/skillmanager/sources.json`
+- `profiles/laptop.json` → `https://...com/skillmanager/profiles/laptop.json`
+
+### 3) 新电脑拉取配置
+
+```bash
+# 使用默认 profile
+skillmanager config pull
+
+# 指定 profile 名称
+skillmanager config pull --profile laptop
+```
+
+**拉取后直接安装：**
 
 ```bash
 skillmanager config pull --profile laptop
+skillmanager install --profile laptop
 ```
 
 ### 3) 安装位置（交给 openskills）
@@ -153,9 +186,9 @@ skillmanager source remove superpowers
 skillmanager update
 ```
 
-### 如果你用了 profile 做“子集安装”（Web UI 勾选）
+### 如果你用了 profile 做"子集安装"（Web UI 勾选）
 
-因为子集安装是按“本地目录复制安装”（为了兼容 Windows 下 openskills 的本地路径识别问题），`openskills update` 不一定能自动追踪来源；此时用 profile 方式更新最稳：
+因为子集安装是按"本地目录复制安装"（为了兼容 Windows 下 openskills 的本地路径识别问题），`openskills update` 不一定能自动追踪来源；此时用 profile 方式更新最稳：
 
 ```bash
 skillmanager update --profile laptop
