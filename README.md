@@ -4,6 +4,32 @@
 
 本项目 **基于 `openskills`** 实现安装与 `AGENTS.md` 同步。
 
+## 环境要求与兼容性（重要）
+
+`skillmanager` 会调用系统里的 `git` 拉取/更新 skills 来源仓库，并通过 `openskills` 执行安装与 `AGENTS.md` 同步。因此你的环境版本过低时，可能出现“看起来配置没问题但某些机器上失败”的情况。
+
+- **Node.js（用于运行 openskills）**：建议 **>= 20.6.0**
+  - 低于该版本可能出现语法错误（例如依赖使用了 RegExp `/v` flag）。
+- **openskills**：建议 **>= 1.5.0**（本项目依赖与运行时行为以该版本为基准）
+- **git**：建议 **>= 2.34.0**
+  - 低版本在 GitHub HTTPS + partial clone（如 `--filter=blob:none`）场景下，可能更容易遇到 TLS/gnutls 相关中断（如 `gnutls_handshake()`）。
+
+常见规避方案：
+
+- **升级 git / Node / openskills**（推荐根治）
+- **改用 SSH 拉取 GitHub 仓库**（绕开 HTTPS/TLS）：
+
+```bash
+export SKILLMANAGER_GIT_PROTOCOL=ssh
+skillmanager webui
+```
+
+- **降低并发**（网络/中间设备对并发连接敏感时）：
+
+```bash
+skillmanager webui --concurrency 1
+```
+
 ## 安装与使用
 
 ### 全局安装（推荐）

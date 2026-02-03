@@ -14,6 +14,7 @@ const { installFromLocalSkillDir } = require('../lib/local-install');
 const { listInstalledSkills } = require('../lib/installed');
 const { syncAgents } = require('../lib/openskills');
 const { launchSelectionUi } = require('../ui/server');
+const { warnPrereqs } = require('../lib/prereqs');
 
 function resolveTargetDir({ globalInstall, universal }) {
   const folder = universal ? '.agent/skills' : '.claude/skills';
@@ -21,6 +22,7 @@ function resolveTargetDir({ globalInstall, universal }) {
 }
 
 async function webui(opts) {
+  await warnPrereqs({ needGit: true, needOpenSkills: true });
   const modeRaw = String(opts?.mode || 'install').toLowerCase();
   const mode = modeRaw === 'uninstall' ? 'uninstall' : 'install';
 

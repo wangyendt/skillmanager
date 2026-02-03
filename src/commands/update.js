@@ -10,6 +10,7 @@ const { syncAgents, runOpenSkills } = require('../lib/openskills');
 const { installFromLocalSkillDir } = require('../lib/local-install');
 const { mapWithConcurrency } = require('../lib/concurrency');
 const { getEffectiveDefaultProfile } = require('../lib/config');
+const { warnPrereqs } = require('../lib/prereqs');
 
 
 function uniq(arr) {
@@ -17,6 +18,7 @@ function uniq(arr) {
 }
 
 async function update(opts) {
+  await warnPrereqs({ needGit: true, needOpenSkills: true });
   const globalInstall = !!opts?.global;
   const universal = !!opts?.universal;
 

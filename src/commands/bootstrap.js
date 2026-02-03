@@ -10,6 +10,7 @@ const path = require('path');
 const os = require('os');
 const { installSourceRef, syncAgents } = require('../lib/openskills');
 const { installFromLocalSkillDir } = require('../lib/local-install');
+const { warnPrereqs } = require('../lib/prereqs');
 
 
 function uniq(arr) {
@@ -17,6 +18,7 @@ function uniq(arr) {
 }
 
 async function bootstrap(opts) {
+  await warnPrereqs({ needGit: true, needOpenSkills: true });
   const paths = getAppPaths();
   await ensureDir(paths.reposDir);
   await ensureDir(paths.profilesDir);
