@@ -3,7 +3,7 @@ const { ensureDir } = require('../lib/fs');
 const { loadSourcesManifest } = require('../lib/manifest');
 const { ensureRepo } = require('../lib/git');
 const { scanSkillsInRepo } = require('../lib/scan');
-const { loadProfile } = require('../lib/profiles');
+const { loadProfile, saveProfile } = require('../lib/profiles');
 const { mapWithConcurrency } = require('../lib/concurrency');
 const { getEffectiveDefaultProfile } = require('../lib/config');
 const path = require('path');
@@ -11,6 +11,7 @@ const os = require('os');
 const { installSourceRef, syncAgents } = require('../lib/openskills');
 const { installFromLocalSkillDir } = require('../lib/local-install');
 const { warnPrereqs } = require('../lib/prereqs');
+const { promptSkillSelection } = require('../lib/cli-select');
 
 
 function uniq(arr) {
@@ -28,46 +29,8 @@ async function bootstrap(opts) {
 
   const profileName = opts?.profile || (await getEffectiveDefaultProfile());
   const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName });
-
-  const wantsSelection = existing?.selectedSkillIds && Array.isArray(existing.selectedSkillIds);
   const globalInstall = !!opts?.global;
   const universal = !!opts?.universal;
-
-  if (!wantsSelection) {
-    // Default path: install everything from each enabled source via openskills directly.
-    // This avoids repo scanning and matches “bootstrap 安装所有 skills”的默认体验。
-    // eslint-disable-next-line no-console
-    console.log(`将从 ${enabledSources.length} 个来源安装（global=${globalInstall}, universal=${universal}）…`);
-
-    if (opts?.dryRun) {
-      // eslint-disable-next-line no-console
-      console.log('\n--dry-run 已启用：将安装以下来源（不执行安装）');
-      for (const s of enabledSources) {
-        const ref = s.openskillsRef || s.repo;
-        // eslint-disable-next-line no-console
-        console.log(`- ${s.name || s.id}  (${ref || 'missing-ref'})`);
-      }
-      // eslint-disable-next-line no-console
-      console.log('\n完成（dry-run）。');
-      return;
-    }
-
-    for (const s of enabledSources) {
-      const ref = s.openskillsRef || s.repo;
-      if (!ref) continue;
-      // eslint-disable-next-line no-console
-      console.log(`\n==> Installing source: ${s.name || s.id}  (${ref})`);
-      await installSourceRef({ ref, globalInstall, universal });
-    }
-
-    if (opts?.sync !== false) {
-      await syncAgents({ output: opts?.output, cwd: process.cwd() });
-    }
-
-    // eslint-disable-next-line no-console
-    console.log('\n完成。');
-    return;
-  }
 
   // Selection path: clone repos + scan SKILL.md, then install selected skill dirs.
   const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
@@ -103,7 +66,18 @@ async function bootstrap(opts) {
       ? existing.selectedSkillIds
       : allSkills.map((s) => s.id);
 
-  // 交互式选择已迁移到：skillmanager webui（mode=install）
+  const chosen = await promptSkillSelection({
+    title: `skillmanager install · profile=${profileName}`,
+    skills: allSkills,
+    initialSelectedIds: selectedIds
+  });
+  if (chosen == null) {
+    // eslint-disable-next-line no-console
+    console.log('已取消（未执行安装）。');
+    return;
+  }
+  selectedIds = chosen;
+  await saveProfile({ profilesDir: paths.profilesDir, profileName, selectedSkillIds: selectedIds });
 
   selectedIds = uniq(selectedIds).filter((id) => skillsById.has(id));
 

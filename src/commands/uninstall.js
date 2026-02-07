@@ -4,6 +4,7 @@ const fsp = require('fs/promises');
 
 const { listInstalledSkills } = require('../lib/installed');
 const { syncAgents } = require('../lib/openskills');
+const { promptSkillSelection } = require('../lib/cli-select');
 
 function resolveTargetDir({ globalInstall, universal }) {
   const folder = universal ? '.agent/skills' : '.claude/skills';
@@ -18,10 +19,35 @@ async function uninstall(opts, skillNames) {
   const installed = await listInstalledSkills(targetDir);
   const installedByName = new Map(installed.map((s) => [s.name, s]));
 
-  let toRemove = Array.isArray(skillNames) ? skillNames.filter(Boolean) : [];
+  if (installed.length === 0) {
+    // eslint-disable-next-line no-console
+    console.log(`未检测到可卸载的 skill。目标目录：${targetDir}`);
+    return;
+  }
 
+  let toRemove = [];
   if (opts?.all) {
     toRemove = installed.map((s) => s.name);
+  } else {
+    const initialSelected = Array.isArray(skillNames) ? skillNames.filter(Boolean) : [];
+    const chosen = await promptSkillSelection({
+      title: 'skillmanager uninstall',
+      skills: installed.map((s) => ({
+        id: s.name,
+        sourceId: 'installed',
+        sourceName: 'Installed',
+        name: s.name,
+        description: s.description,
+        skillDir: s.skillDir
+      })),
+      initialSelectedIds: initialSelected
+    });
+    if (chosen == null) {
+      // eslint-disable-next-line no-console
+      console.log('已取消（未执行卸载）。');
+      return;
+    }
+    toRemove = chosen;
   }
 
   toRemove = Array.from(new Set(toRemove)).filter((n) => installedByName.has(n));
@@ -29,14 +55,6 @@ async function uninstall(opts, skillNames) {
   if (toRemove.length === 0) {
     // eslint-disable-next-line no-console
     console.log(`未选择任何可卸载的 skill。目标目录：${targetDir}`);
-    // eslint-disable-next-line no-console
-    console.log('用法：');
-    // eslint-disable-next-line no-console
-    console.log('  - skillmanager webui --mode uninstall');
-    // eslint-disable-next-line no-console
-    console.log('  - skillmanager uninstall <skill1> <skill2>');
-    // eslint-disable-next-line no-console
-    console.log('  - skillmanager uninstall --all');
     return;
   }
 

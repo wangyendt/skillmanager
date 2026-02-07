@@ -1,6 +1,6 @@
 {
   "name": "@wang121ye/skillmanager",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Cross-platform agent skill manager (bootstrap + optional Web UI selection) built on top of openskills.",
   "keywords": [
     "skillmanager",
@@ -45,6 +45,7 @@
     "gray-matter": "^4.0.3",
     "openskills": "^1.5.0",
     "simple-git": "^3.27.0",
-    "undici": "^6.23.0"
+    "undici": "^6.23.0",
+    "yoctocolors-cjs": "^2.1.3"
   }
 }

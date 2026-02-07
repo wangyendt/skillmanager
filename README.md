@@ -71,6 +71,15 @@ npx @wang121ye/skillmanager install
 skillmanager install
 ```
 
+### 命令行交互式选择（类似 openskills）
+
+默认 `skillmanager install` 会进入交互式选择（按来源分组）。支持：
+- 空格选择/取消
+- a 全选，i 反选
+- h 顶部，e 底部
+- [ / ] 切换分组
+- Esc 退出，Enter 确认
+
 ### 2) 安装时启用 Web UI 选择（默认全选，可批量全选/全不选/反选/搜索）
 
 ```bash
