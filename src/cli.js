@@ -30,6 +30,7 @@ async function main() {
     .option('--dry-run', '仅打印将执行的内容，不实际安装', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
     .option('--profile <name>', '选择配置名（默认：来自 config 或 SKILLMANAGER_PROFILE 环境变量）')
+    .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (opts) => {
       await bootstrap(opts);
     });
@@ -44,6 +45,7 @@ async function main() {
     .option('--output <path>', '作用：sync 输出文件路径（默认：AGENTS.md）')
     .option('--no-sync', '作用：不执行 openskills sync（仅安装/卸载，不更新 AGENTS.md）', false)
     .option('--concurrency <n>', '作用：install 模式下并发拉取/扫描来源仓库，提高速度（默认：3）', '3')
+    .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (opts) => {
       await webui(opts);
     });
@@ -64,6 +66,7 @@ async function main() {
     .option('--no-sync', '跳过 openskills sync', false)
     .option('--profile <name>', '按 profile 选择集更新（会重新安装选中的 skills）')
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
+    .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (opts) => {
       await update(opts);
     });

@@ -30,6 +30,21 @@ skillmanager webui
 skillmanager webui --concurrency 1
 ```
 
+### 缓存自动刷新（避免“只看到旧的 skills”）
+
+为避免第三方用户忘记更新缓存，`skillmanager` 在扫描来源仓库时会检查本地缓存是否落后于远端：
+
+- 如果检测到缓存落后，默认会**自动重新拉取**最新仓库。
+- 如需手动控制，可使用 `--force-refresh` 强制刷新，或设置 `SKILLMANAGER_AUTO_REFRESH=0` 关闭自动刷新。
+
+示例：
+
+```bash
+skillmanager webui --force-refresh
+skillmanager install --force-refresh
+skillmanager update --force-refresh
+```
+
 ## 安装与使用
 
 ### 全局安装（推荐）

@@ -77,7 +77,7 @@ async function bootstrap(opts) {
   const skillsById = new Map();
   const perSource = await mapWithConcurrency(enabledSources, concurrency, async (s) => {
     try {
-      const repoDir = await ensureRepo({ reposDir: paths.reposDir, source: s });
+      const repoDir = await ensureRepo({ reposDir: paths.reposDir, source: s, forceRefresh: !!opts?.forceRefresh });
       const skills = await scanSkillsInRepo({
         sourceId: s.id,
         sourceName: s.name || s.id,
