@@ -230,15 +230,15 @@ skillmanager source remove superpowers
 
 ### 默认更新（推荐）
 
-这会调用 `openskills update` 更新所有 openskills 已记录的来源，然后重新 `sync`：
+默认会优先按 profile 选择集更新（显式 `--profile` 优先，否则使用默认 profile）：
 
 ```bash
 skillmanager update
 ```
 
-### 如果你用了 profile 做"子集安装"（Web UI 勾选）
+如果目标 profile 不存在或没有有效选择集，会自动回退到 `openskills update`。
 
-因为子集安装是按"本地目录复制安装"（为了兼容 Windows 下 openskills 的本地路径识别问题），`openskills update` 不一定能自动追踪来源；此时用 profile 方式更新最稳：
+### 指定 profile 更新（子集安装最稳）
 
 ```bash
 skillmanager update --profile laptop
@@ -249,6 +249,12 @@ skillmanager update --profile laptop
 ```bash
 skillmanager webui --profile laptop
 skillmanager update --profile laptop
+```
+
+### 强制使用 openskills 原生更新链路
+
+```bash
+skillmanager update --openskills
 ```
 
 ## 卸载 skills

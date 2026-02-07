@@ -17,31 +17,46 @@ function uniq(arr) {
   return Array.from(new Set(arr));
 }
 
+async function runFallbackOpenSkillsUpdate(opts) {
+  // eslint-disable-next-line no-console
+  console.log('正在执行 openskills update（更新所有已记录来源）…');
+  await runOpenSkills(['update']);
+  if (opts?.sync !== false) {
+    await syncAgents({ output: opts?.output, cwd: process.cwd() });
+  }
+  // eslint-disable-next-line no-console
+  console.log('\n完成。');
+}
+
 async function update(opts) {
   await warnPrereqs({ needGit: true, needOpenSkills: true });
   const globalInstall = !!opts?.global;
   const universal = !!opts?.universal;
 
-  const profileName = opts?.profile;
-  const wantsSelection = !!profileName;
+  if (opts?.openskills) {
+    await runFallbackOpenSkillsUpdate(opts);
+    return;
+  }
 
-  if (!wantsSelection) {
-    // Default: ask openskills to update everything it has tracked.
+  // Default path: profile-based update (explicit profile > default profile).
+  const paths = getAppPaths();
+  await ensureDir(paths.profilesDir);
+  const effectiveProfileName = opts?.profile || (await getEffectiveDefaultProfile());
+  const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName: effectiveProfileName });
+  const hasSelection = Array.isArray(existing?.selectedSkillIds);
+
+  if (!hasSelection) {
     // eslint-disable-next-line no-console
-    console.log('正在执行 openskills update（更新所有已记录来源）…');
-    await runOpenSkills(['update']);
-    if (opts?.sync !== false) {
-      await syncAgents({ output: opts?.output, cwd: process.cwd() });
-    }
-    // eslint-disable-next-line no-console
-    console.log('\n完成。');
+    console.warn(
+      `未找到可用 profile 选择集：${effectiveProfileName}，将回退到 openskills update。` +
+        `可先运行 skillmanager webui --profile ${effectiveProfileName} 保存选择集。`
+    );
+    await runFallbackOpenSkillsUpdate(opts);
     return;
   }
 
   // Profile-based update: refresh repos cache and re-install selected skill dirs.
-  const paths = getAppPaths();
   await ensureDir(paths.reposDir);
-  await ensureDir(paths.profilesDir);
 
   const { sources } = await loadSourcesManifest();
   const enabledSources = sources.filter((s) => s && s.enabled !== false);
@@ -73,21 +88,16 @@ async function update(opts) {
     for (const sk of skills) skillsById.set(sk.id, sk);
   }
 
-  const allSkills = Array.from(skillsById.values());
-
-  const effectiveProfileName = profileName || (await getEffectiveDefaultProfile());
-  const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName: effectiveProfileName });
-  let selectedIds =
-    existing?.selectedSkillIds && Array.isArray(existing.selectedSkillIds)
-      ? existing.selectedSkillIds
-      : allSkills.map((s) => s.id);
+  let selectedIds = existing.selectedSkillIds;
 
   // 交互式选择已迁移到：skillmanager webui（mode=install），先保存 profile 再 update --profile
 
   selectedIds = uniq(selectedIds).filter((id) => skillsById.has(id));
 
   // eslint-disable-next-line no-console
-  console.log(`将更新/重装 ${selectedIds.length} 个 skills（global=${globalInstall}, universal=${universal}）…`);
+  console.log(
+    `将按 profile=${effectiveProfileName} 更新/重装 ${selectedIds.length} 个 skills（global=${globalInstall}, universal=${universal}）…`
+  );
 
   for (const id of selectedIds) {
     const skill = skillsById.get(id);
@@ -109,4 +119,3 @@ async function update(opts) {
 }
 
 module.exports = { update };
-

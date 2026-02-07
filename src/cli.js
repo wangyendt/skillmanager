@@ -59,12 +59,13 @@ async function main() {
 
   program
     .command('update')
-    .description('更新 skills，并同步生成/更新 AGENTS.md。')
+    .description('更新 skills，并同步生成/更新 AGENTS.md（默认按 profile 更新）。')
     .option('--global', '安装到全局（默认：当前项目）', false)
     .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
     .option('--output <path>', 'sync 输出文件（默认：AGENTS.md）')
     .option('--no-sync', '跳过 openskills sync', false)
     .option('--profile <name>', '按 profile 选择集更新（会重新安装选中的 skills）')
+    .option('--openskills', '强制走 openskills update（忽略 profile 选择集）', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
     .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (opts) => {
@@ -179,4 +180,3 @@ main().catch((err) => {
   console.error(err?.stack || String(err));
   process.exitCode = 1;
 });
-
