@@ -25,8 +25,8 @@ async function main() {
     .description('安装 skills：按 sources 配置安装全部，或用 Web UI 选择子集安装。')
     .option('--global', '安装到全局（默认：当前项目）', false)
     .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
-    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md）')
-    .option('--no-sync', '跳过 openskills sync')
+    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
+    .option('--sync', '执行 openskills sync（默认不执行）', false)
     .option('--dry-run', '仅打印将执行的内容，不实际安装', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
     .option('--profile <name>', '选择配置名（默认：来自 config 或 SKILLMANAGER_PROFILE 环境变量）')
@@ -42,8 +42,8 @@ async function main() {
     .option('--profile <name>', '作用：install 模式下使用/保存到的 profile（默认：使用默认 profile）')
     .option('--global', '作用：把目标切到全局目录（~/.claude/skills 或 ~/.agent/skills）', false)
     .option('--universal', '作用：使用 .agent/skills（通用 AGENTS.md 场景；默认是 .claude/skills）', false)
-    .option('--output <path>', '作用：sync 输出文件路径（默认：AGENTS.md）')
-    .option('--no-sync', '作用：不执行 openskills sync（仅安装/卸载，不更新 AGENTS.md）')
+    .option('--output <path>', '作用：sync 输出文件路径（默认：AGENTS.md，需配合 --sync）')
+    .option('--sync', '作用：执行 openskills sync（默认不执行）')
     .option('--concurrency <n>', '作用：install 模式下并发拉取/扫描来源仓库，提高速度（默认：3）', '3')
     .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (opts) => {
@@ -59,11 +59,11 @@ async function main() {
 
   program
     .command('update')
-    .description('更新 skills，并同步生成/更新 AGENTS.md（默认按 profile 更新）。')
+    .description('更新 skills（默认按 profile 更新；可选 --sync 生成/更新 AGENTS.md）。')
     .option('--global', '安装到全局（默认：当前项目）', false)
     .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
-    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md）')
-    .option('--no-sync', '跳过 openskills sync')
+    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
+    .option('--sync', '执行 openskills sync（默认不执行）', false)
     .option('--profile <name>', '按 profile 选择集更新（会重新安装选中的 skills）')
     .option('--openskills', '强制走 openskills update（忽略 profile 选择集）', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
@@ -74,13 +74,13 @@ async function main() {
 
   program
     .command('uninstall')
-    .description('卸载 skills（从 .claude/skills 或 .agent/skills 删除，并可 sync 更新 AGENTS.md）。')
+    .description('卸载 skills（从 .claude/skills 或 .agent/skills 删除；可选 --sync 更新 AGENTS.md）。')
     .argument('[skillNames...]', '要卸载的 skill 名称（目录名），可多个')
     .option('--global', '卸载全局目录（默认：当前项目）', false)
     .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
     .option('--all', '卸载目标目录下所有已安装 skills', false)
-    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md）')
-    .option('--no-sync', '跳过 openskills sync')
+    .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
+    .option('--sync', '执行 openskills sync（默认不执行）', false)
     .action(async (skillNames, opts) => {
       await uninstall(opts, skillNames);
     });

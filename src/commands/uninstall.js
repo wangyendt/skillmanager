@@ -69,7 +69,7 @@ async function uninstall(opts, skillNames) {
     await fsp.rm(entry.skillDir, { recursive: true, force: true });
   }
 
-  if (opts?.sync !== false) {
+  if (opts?.sync) {
     await syncAgents({ output: opts?.output, cwd: process.cwd() });
   }
 
@@ -78,4 +78,3 @@ async function uninstall(opts, skillNames) {
 }
 
 module.exports = { uninstall };
-

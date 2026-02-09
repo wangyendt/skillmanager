@@ -186,19 +186,21 @@ skillmanager install --global --universal
 
 ### 4) 同步 `AGENTS.md`
 
-默认会执行 `openskills sync`（输出到当前目录的 `AGENTS.md`）。
+默认**不执行** `openskills sync`。如需生成/更新当前目录的 `AGENTS.md`，请显式加 `--sync`。
 
-- 指定输出文件：
-
-```bash
-skillmanager install --output AGENTS.md
-```
-
-- 跳过同步：
+- 执行同步（默认输出 `AGENTS.md`）：
 
 ```bash
-skillmanager install --no-sync
+skillmanager install --sync
 ```
+
+- 指定输出文件（需配合 `--sync`）：
+
+```bash
+skillmanager install --sync --output AGENTS.md
+```
+
+> `install` / `update` / `uninstall` / `webui` 均为默认不 sync；只有传 `--sync` 时才会执行 `openskills sync`。
 
 ### 5) dry-run（只打印要装什么，不实际安装）
 

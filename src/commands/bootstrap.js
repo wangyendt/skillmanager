@@ -117,7 +117,7 @@ async function bootstrap(opts) {
   }
 
   // 3) sync AGENTS.md (optional)
-  if (opts?.sync !== false) {
+  if (opts?.sync) {
     await syncAgents({ output: opts?.output, cwd: process.cwd() });
   }
 
@@ -126,4 +126,3 @@ async function bootstrap(opts) {
 }
 
 module.exports = { bootstrap };
-

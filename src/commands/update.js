@@ -21,7 +21,7 @@ async function runFallbackOpenSkillsUpdate(opts) {
   // eslint-disable-next-line no-console
   console.log('正在执行 openskills update（更新所有已记录来源）…');
   await runOpenSkills(['update']);
-  if (opts?.sync !== false) {
+  if (opts?.sync) {
     await syncAgents({ output: opts?.output, cwd: process.cwd() });
   }
   // eslint-disable-next-line no-console
@@ -110,7 +110,7 @@ async function update(opts) {
     console.log(`✅ Re-installed (local copy): ${targetPath}`);
   }
 
-  if (opts?.sync !== false) {
+  if (opts?.sync) {
     await syncAgents({ output: opts?.output, cwd: process.cwd() });
   }
 
