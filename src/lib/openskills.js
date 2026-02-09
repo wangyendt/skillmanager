@@ -23,28 +23,10 @@ async function runOpenSkills(args, opts = {}) {
   });
 }
 
-function buildOpenSkillsFlags({ globalInstall, universal }) {
-  const flags = [];
-  if (globalInstall) flags.push('--global');
-  if (universal) flags.push('--universal');
-  return flags;
-}
-
-async function installSkillDir({ skillDir, globalInstall, universal }) {
-  const flags = buildOpenSkillsFlags({ globalInstall, universal });
-  await runOpenSkills(['install', skillDir, ...flags, '--yes']);
-}
-
-async function installSourceRef({ ref, globalInstall, universal }) {
-  const flags = buildOpenSkillsFlags({ globalInstall, universal });
-  await runOpenSkills(['install', ref, ...flags, '--yes']);
-}
-
 async function syncAgents({ output, cwd }) {
   const args = ['sync', '--yes'];
   if (output) args.push('--output', path.resolve(cwd || process.cwd(), output));
   await runOpenSkills(args, { cwd });
 }
 
-module.exports = { installSkillDir, installSourceRef, syncAgents, runOpenSkills };
-
+module.exports = { syncAgents, runOpenSkills };

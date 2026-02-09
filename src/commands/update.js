@@ -3,15 +3,21 @@ const { ensureDir } = require('../lib/fs');
 const { loadSourcesManifest } = require('../lib/manifest');
 const { ensureRepo } = require('../lib/git');
 const { scanSkillsInRepo } = require('../lib/scan');
-const { loadProfile } = require('../lib/profiles');
-const path = require('path');
-const os = require('os');
+const { loadProfile, saveProfile } = require('../lib/profiles');
 const { syncAgents, runOpenSkills } = require('../lib/openskills');
 const { installFromLocalSkillDir } = require('../lib/local-install');
 const { mapWithConcurrency } = require('../lib/concurrency');
 const { getEffectiveDefaultProfile } = require('../lib/config');
 const { warnPrereqs } = require('../lib/prereqs');
-
+const { promptSkillSelection } = require('../lib/cli-select');
+const {
+  loadAgentsManifest,
+  getScopeFromOpts,
+  defaultAgentIds,
+  normalizeSelectedAgentIds,
+  resolveAgentTargets,
+  buildAgentSelectionItems
+} = require('../lib/agents');
 
 function uniq(arr) {
   return Array.from(new Set(arr));
@@ -30,37 +36,22 @@ async function runFallbackOpenSkillsUpdate(opts) {
 
 async function update(opts) {
   await warnPrereqs({ needGit: true, needOpenSkills: true });
-  const globalInstall = !!opts?.global;
-  const universal = !!opts?.universal;
+  const scope = getScopeFromOpts(opts);
 
   if (opts?.openskills) {
     await runFallbackOpenSkillsUpdate(opts);
     return;
   }
 
-  // Default path: profile-based update (explicit profile > default profile).
   const paths = getAppPaths();
   await ensureDir(paths.profilesDir);
-  const effectiveProfileName = opts?.profile || (await getEffectiveDefaultProfile());
-  const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName: effectiveProfileName });
+  const profileName = opts?.profile || (await getEffectiveDefaultProfile());
+  const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName });
   const hasSelection = Array.isArray(existing?.selectedSkillIds);
 
-  if (!hasSelection) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `未找到可用 profile 选择集：${effectiveProfileName}，将回退到 openskills update。` +
-        `可先运行 skillmanager webui --profile ${effectiveProfileName} 保存选择集。`
-    );
-    await runFallbackOpenSkillsUpdate(opts);
-    return;
-  }
-
-  // Profile-based update: refresh repos cache and re-install selected skill dirs.
   await ensureDir(paths.reposDir);
-
   const { sources } = await loadSourcesManifest();
   const enabledSources = sources.filter((s) => s && s.enabled !== false);
-
   const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
   // eslint-disable-next-line no-console
   console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLMANAGER_CONCURRENCY 调整）`);
@@ -83,32 +74,67 @@ async function update(opts) {
       return { source: s, skills: [] };
     }
   });
+  for (const { skills } of perSource) for (const sk of skills) skillsById.set(sk.id, sk);
 
-  for (const { skills } of perSource) {
-    for (const sk of skills) skillsById.set(sk.id, sk);
+  let selectedIds = hasSelection ? uniq(existing.selectedSkillIds).filter((id) => skillsById.has(id)) : Array.from(skillsById.keys());
+  if (!hasSelection) {
+    // eslint-disable-next-line no-console
+    console.warn(`未找到可用 profile 选择集：${profileName}，本次将更新全部可见 skills。`);
+  }
+  if (!selectedIds.length) {
+    // eslint-disable-next-line no-console
+    console.warn(`profile=${profileName} 当前选择在来源中无可更新项，跳过。`);
+    return;
   }
 
-  let selectedIds = existing.selectedSkillIds;
-
-  // 交互式选择已迁移到：skillmanager webui（mode=install），先保存 profile 再 update --profile
-
-  selectedIds = uniq(selectedIds).filter((id) => skillsById.has(id));
+  const { agents } = await loadAgentsManifest();
+  if (!agents.length) throw new Error('agents 映射为空，请检查 manifests/agents.json');
+  let selectedAgentIds = normalizeSelectedAgentIds(existing?.selectedAgentIdsByScope?.[scope], agents);
+  if (!selectedAgentIds.length) {
+    const chosenAgentIds = await promptSkillSelection({
+      title: `skillmanager update · agents · ${scope}`,
+      skills: buildAgentSelectionItems(agents),
+      initialSelectedIds: defaultAgentIds(agents)
+    });
+    if (chosenAgentIds == null) {
+      // eslint-disable-next-line no-console
+      console.log('已取消（未执行更新）。');
+      return;
+    }
+    selectedAgentIds = normalizeSelectedAgentIds(chosenAgentIds, agents);
+  }
+  if (!selectedAgentIds.length) {
+    // eslint-disable-next-line no-console
+    console.log('未选择任何 agent，已取消。');
+    return;
+  }
+  const targets = resolveAgentTargets({ selectedAgentIds, agents, scope, cwd: process.cwd() });
+  if (!targets.length) throw new Error('未解析出任何目标目录，请检查 agents 路径映射。');
 
   // eslint-disable-next-line no-console
-  console.log(
-    `将按 profile=${effectiveProfileName} 更新/重装 ${selectedIds.length} 个 skills（global=${globalInstall}, universal=${universal}）…`
-  );
-
+  console.log(`将按 profile=${profileName} 更新/重装 ${selectedIds.length} 个 skills（scope=${scope}，agents=${selectedAgentIds.length}）…`);
   for (const id of selectedIds) {
     const skill = skillsById.get(id);
     // eslint-disable-next-line no-console
     console.log(`\n==> Re-installing: ${skill.name}  (${skill.sourceId})`);
-    const folder = universal ? '.agent/skills' : '.claude/skills';
-    const targetDir = globalInstall ? path.join(os.homedir(), folder) : path.join(process.cwd(), folder);
-    const { targetPath } = await installFromLocalSkillDir({ skillDir: skill.skillDir, targetDir });
-    // eslint-disable-next-line no-console
-    console.log(`✅ Re-installed (local copy): ${targetPath}`);
+    for (const target of targets) {
+      const { targetPath } = await installFromLocalSkillDir({ skillDir: skill.skillDir, targetDir: target.targetDir });
+      // eslint-disable-next-line no-console
+      console.log(`✅ Re-installed: ${targetPath}  [${target.agentIds.join(', ')}]`);
+    }
   }
+
+  const nextSelectedAgentIdsByScope = {
+    project: Array.isArray(existing?.selectedAgentIdsByScope?.project) ? existing.selectedAgentIdsByScope.project : [],
+    global: Array.isArray(existing?.selectedAgentIdsByScope?.global) ? existing.selectedAgentIdsByScope.global : [],
+    [scope]: selectedAgentIds
+  };
+  await saveProfile({
+    profilesDir: paths.profilesDir,
+    profileName,
+    selectedSkillIds: selectedIds,
+    selectedAgentIdsByScope: nextSelectedAgentIdsByScope
+  });
 
   if (opts?.sync) {
     await syncAgents({ output: opts?.output, cwd: process.cwd() });

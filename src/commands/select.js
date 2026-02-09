@@ -62,11 +62,13 @@ async function selectUi(opts) {
     })),
     selectedSkillIds: initialSelected
   });
+  const chosenSkillIds =
+    Array.isArray(chosen) ? chosen : Array.isArray(chosen?.selectedSkillIds) ? chosen.selectedSkillIds : [];
 
   const savedPath = await saveProfile({
     profilesDir: paths.profilesDir,
     profileName,
-    selectedSkillIds: chosen
+    selectedSkillIds: chosenSkillIds
   });
 
   // eslint-disable-next-line no-console
@@ -76,4 +78,3 @@ async function selectUi(opts) {
 }
 
 module.exports = { selectUi };
-

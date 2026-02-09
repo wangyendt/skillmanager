@@ -140,7 +140,14 @@ async function pullProfileCmd(opts) {
   await saveProfile({
     profilesDir,
     profileName,
-    selectedSkillIds: Array.isArray(profileJson?.selectedSkillIds) ? profileJson.selectedSkillIds : []
+    selectedSkillIds: Array.isArray(profileJson?.selectedSkillIds) ? profileJson.selectedSkillIds : [],
+    selectedAgentIdsByScope:
+      profileJson?.selectedAgentIdsByScope && typeof profileJson.selectedAgentIdsByScope === 'object'
+        ? {
+            project: Array.isArray(profileJson.selectedAgentIdsByScope.project) ? profileJson.selectedAgentIdsByScope.project : [],
+            global: Array.isArray(profileJson.selectedAgentIdsByScope.global) ? profileJson.selectedAgentIdsByScope.global : []
+          }
+        : { project: [], global: [] }
   });
   // eslint-disable-next-line no-console
   console.log('✅ profile 下载成功');

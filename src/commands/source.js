@@ -1,14 +1,5 @@
 const { readUserSourcesManifest, writeUserSourcesManifest, loadSourcesManifest, getUserManifestPath } = require('../lib/manifest');
-const { defaultSourceIdFromInput, parseGitHubRef } = require('../lib/source-utils');
-
-function uniqueId(desired, existingIds) {
-  if (!existingIds.has(desired)) return desired;
-  for (let i = 2; i < 1000; i++) {
-    const next = `${desired}-${i}`;
-    if (!existingIds.has(next)) return next;
-  }
-  throw new Error(`无法生成唯一 id：${desired}`);
-}
+const { upsertUserSourceFromInput } = require('../lib/source-manage');
 
 async function listSources() {
   const { sources, manifestPath } = await loadSourcesManifest();
@@ -25,32 +16,15 @@ async function listSources() {
 }
 
 async function addSource(repoOrRef, opts) {
-  const { manifest, sources, userPath } = await readUserSourcesManifest();
-  const existingIds = new Set(sources.map((s) => s && s.id).filter(Boolean));
-
-  const gh = parseGitHubRef(repoOrRef);
-  const desiredId = opts?.id ? String(opts.id) : defaultSourceIdFromInput(repoOrRef);
-  const id = uniqueId(desiredId, existingIds);
-
-  const newSource = {
-    id,
-    name: opts?.name ? String(opts.name) : gh ? `${gh.owner}/${gh.repo}` : String(repoOrRef),
-    kind: 'git',
-    enabled: opts?.disabled ? false : true,
-    repo: gh?.httpsRepo || String(repoOrRef),
-    openskillsRef: opts?.ref ? String(opts.ref) : gh?.openskillsRef || undefined
-  };
-
-  const next = {
-    ...(manifest || {}),
-    version: Number(manifest?.version || 1),
-    sources: [...sources, newSource]
-  };
-
-  await writeUserSourcesManifest(next);
+  const { added, source: newSource, userPath } = await upsertUserSourceFromInput(repoOrRef, {
+    id: opts?.id,
+    name: opts?.name,
+    ref: opts?.ref,
+    enabled: opts?.disabled ? false : true
+  });
 
   // eslint-disable-next-line no-console
-  console.log(`已添加来源：${id}`);
+  console.log(added ? `已添加来源：${newSource.id}` : `来源已存在：${newSource.id}`);
   // eslint-disable-next-line no-console
   console.log(`写入：${userPath}`);
   // eslint-disable-next-line no-console
@@ -100,4 +74,3 @@ async function setEnabled(id, enabled) {
 }
 
 module.exports = { listSources, addSource, removeSource, setEnabled };
-

@@ -31,5 +31,29 @@ async function listInstalledSkills(targetDir) {
   }
 }
 
-module.exports = { listInstalledSkills };
+async function listInstalledSkillsAcrossTargets(targets) {
+  const merged = new Map();
+  for (const target of targets) {
+    const installed = await listInstalledSkills(target.targetDir);
+    for (const s of installed) {
+      if (!merged.has(s.name)) {
+        merged.set(s.name, {
+          name: s.name,
+          description: s.description || '',
+          entries: []
+        });
+      }
+      const item = merged.get(s.name);
+      if (!item.description && s.description) item.description = s.description;
+      item.entries.push({
+        ...s,
+        targetDir: target.targetDir,
+        agentIds: Array.isArray(target.agentIds) ? target.agentIds : [],
+        agentNames: Array.isArray(target.agentNames) ? target.agentNames : []
+      });
+    }
+  }
+  return Array.from(merged.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
 
+module.exports = { listInstalledSkills, listInstalledSkillsAcrossTargets };

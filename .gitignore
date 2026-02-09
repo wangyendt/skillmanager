@@ -137,3 +137,5 @@ dist
 
 
 .claude/
+.agents/
+.cursor/

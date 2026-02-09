@@ -6,31 +6,45 @@ const { scanSkillsInRepo } = require('../lib/scan');
 const { loadProfile, saveProfile } = require('../lib/profiles');
 const { mapWithConcurrency } = require('../lib/concurrency');
 const { getEffectiveDefaultProfile } = require('../lib/config');
-const path = require('path');
-const os = require('os');
-const { installSourceRef, syncAgents } = require('../lib/openskills');
+const { syncAgents } = require('../lib/openskills');
 const { installFromLocalSkillDir } = require('../lib/local-install');
 const { warnPrereqs } = require('../lib/prereqs');
 const { promptSkillSelection } = require('../lib/cli-select');
+const { upsertUserSourceFromInput } = require('../lib/source-manage');
+const {
+  loadAgentsManifest,
+  getScopeFromOpts,
+  defaultAgentIds,
+  normalizeSelectedAgentIds,
+  resolveAgentTargets,
+  buildAgentSelectionItems
+} = require('../lib/agents');
 
 
 function uniq(arr) {
   return Array.from(new Set(arr));
 }
 
-async function bootstrap(opts) {
+async function bootstrap(opts, repoOrRef) {
   await warnPrereqs({ needGit: true, needOpenSkills: true });
   const paths = getAppPaths();
   await ensureDir(paths.reposDir);
   await ensureDir(paths.profilesDir);
 
+  const scope = getScopeFromOpts(opts);
   const { sources } = await loadSourcesManifest();
-  const enabledSources = sources.filter((s) => s && s.enabled !== false);
+  let enabledSources = sources.filter((s) => s && s.enabled !== false);
+
+  const inputSource = repoOrRef ? String(repoOrRef).trim() : '';
+  if (inputSource) {
+    const { added, source } = await upsertUserSourceFromInput(inputSource, { enabled: true, enableIfExists: true });
+    enabledSources = [source];
+    // eslint-disable-next-line no-console
+    console.log(added ? `已自动写入来源：${source.id}` : `已复用来源：${source.id}`);
+  }
 
   const profileName = opts?.profile || (await getEffectiveDefaultProfile());
   const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName });
-  const globalInstall = !!opts?.global;
-  const universal = !!opts?.universal;
 
   // Selection path: clone repos + scan SKILL.md, then install selected skill dirs.
   const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
@@ -61,6 +75,12 @@ async function bootstrap(opts) {
   }
 
   const allSkills = Array.from(skillsById.values());
+  if (allSkills.length === 0) {
+    // eslint-disable-next-line no-console
+    console.log('未找到可安装的 skills。');
+    return;
+  }
+
   let selectedIds =
     existing?.selectedSkillIds && Array.isArray(existing.selectedSkillIds)
       ? existing.selectedSkillIds
@@ -76,13 +96,48 @@ async function bootstrap(opts) {
     console.log('已取消（未执行安装）。');
     return;
   }
-  selectedIds = chosen;
-  await saveProfile({ profilesDir: paths.profilesDir, profileName, selectedSkillIds: selectedIds });
+  selectedIds = uniq(chosen).filter((id) => skillsById.has(id));
 
-  selectedIds = uniq(selectedIds).filter((id) => skillsById.has(id));
+  const { agents } = await loadAgentsManifest();
+  if (!agents.length) throw new Error('agents 映射为空，请检查 manifests/agents.json');
+
+  let initialAgentIds = normalizeSelectedAgentIds(existing?.selectedAgentIdsByScope?.[scope], agents);
+  if (!initialAgentIds.length) initialAgentIds = defaultAgentIds(agents);
+
+  const chosenAgentIds = await promptSkillSelection({
+    title: `skillmanager install · agents · ${scope}`,
+    skills: buildAgentSelectionItems(agents),
+    initialSelectedIds: initialAgentIds
+  });
+  if (chosenAgentIds == null) {
+    // eslint-disable-next-line no-console
+    console.log('已取消（未执行安装）。');
+    return;
+  }
+  const selectedAgentIds = normalizeSelectedAgentIds(chosenAgentIds, agents);
+  if (!selectedAgentIds.length) {
+    // eslint-disable-next-line no-console
+    console.log('未选择任何 agent，已取消。');
+    return;
+  }
+
+  const nextSelectedAgentIdsByScope = {
+    project: Array.isArray(existing?.selectedAgentIdsByScope?.project) ? existing.selectedAgentIdsByScope.project : [],
+    global: Array.isArray(existing?.selectedAgentIdsByScope?.global) ? existing.selectedAgentIdsByScope.global : [],
+    [scope]: selectedAgentIds
+  };
+  await saveProfile({
+    profilesDir: paths.profilesDir,
+    profileName,
+    selectedSkillIds: selectedIds,
+    selectedAgentIdsByScope: nextSelectedAgentIdsByScope
+  });
+
+  const targets = resolveAgentTargets({ selectedAgentIds, agents, scope, cwd: process.cwd() });
+  if (!targets.length) throw new Error('未解析出任何安装目录，请检查 agents 路径映射。');
 
   // eslint-disable-next-line no-console
-  console.log(`将安装 ${selectedIds.length} 个 skills（global=${globalInstall}, universal=${universal}）…`);
+  console.log(`将安装 ${selectedIds.length} 个 skills（scope=${scope}，agents=${selectedAgentIds.length}，dirs=${targets.length}）…`);
 
   if (opts?.dryRun) {
     // eslint-disable-next-line no-console
@@ -97,6 +152,12 @@ async function bootstrap(opts) {
       console.log(`… 还有 ${selectedIds.length - 30} 个`);
     }
     // eslint-disable-next-line no-console
+    console.log('\n目标目录（按 agent 去重）：');
+    for (const t of targets) {
+      // eslint-disable-next-line no-console
+      console.log(`- ${t.targetDir}  [${t.agentIds.join(', ')}]`);
+    }
+    // eslint-disable-next-line no-console
     console.log('\n完成（dry-run）。');
     return;
   }
@@ -107,13 +168,12 @@ async function bootstrap(opts) {
     // eslint-disable-next-line no-console
     console.log(`\n==> Installing: ${skill.name}  (${skill.sourceId})`);
 
-    // NOTE: On Windows, openskills does not recognize absolute paths like C:\...
-    // So for selection-mode we perform a direct local install (copy) ourselves, then rely on openskills sync.
-    const folder = universal ? '.agent/skills' : '.claude/skills';
-    const targetDir = globalInstall ? path.join(os.homedir(), folder) : path.join(process.cwd(), folder);
-    const { targetPath } = await installFromLocalSkillDir({ skillDir: skill.skillDir, targetDir });
-    // eslint-disable-next-line no-console
-    console.log(`✅ Installed (local copy): ${targetPath}`);
+    // NOTE: We perform direct local install (copy), then optional openskills sync.
+    for (const target of targets) {
+      const { targetPath } = await installFromLocalSkillDir({ skillDir: skill.skillDir, targetDir: target.targetDir });
+      // eslint-disable-next-line no-console
+      console.log(`✅ Installed: ${targetPath}  [${target.agentIds.join(', ')}]`);
+    }
   }
 
   // 3) sync AGENTS.md (optional)

@@ -10,22 +10,56 @@ async function loadProfile({ profilesDir, profileName }) {
   const p = profilePath({ profilesDir, profileName });
   if (!(await fileExists(p))) return null;
   try {
-    return await readJson(p);
+    const raw = await readJson(p);
+    const selectedSkillIds = Array.isArray(raw?.selectedSkillIds) ? raw.selectedSkillIds : [];
+    const selectedAgentIdsByScope = {
+      project: Array.isArray(raw?.selectedAgentIdsByScope?.project) ? raw.selectedAgentIdsByScope.project : [],
+      global: Array.isArray(raw?.selectedAgentIdsByScope?.global) ? raw.selectedAgentIdsByScope.global : []
+    };
+    return {
+      ...(raw || {}),
+      version: Number(raw?.version || 1) >= 2 ? Number(raw.version) : 2,
+      selectedSkillIds,
+      selectedAgentIdsByScope
+    };
   } catch {
     return null;
   }
 }
 
-async function saveProfile({ profilesDir, profileName, selectedSkillIds }) {
+async function saveProfile({ profilesDir, profileName, selectedSkillIds, selectedAgentIdsByScope }) {
   await ensureDir(profilesDir);
   const p = profilePath({ profilesDir, profileName });
+  let existing = null;
+  if (await fileExists(p)) {
+    try {
+      existing = await readJson(p);
+    } catch {
+      existing = null;
+    }
+  }
+  const existingSkillIds = Array.isArray(existing?.selectedSkillIds) ? existing.selectedSkillIds : [];
+  const existingAgentIdsByScope = {
+    project: Array.isArray(existing?.selectedAgentIdsByScope?.project) ? existing.selectedAgentIdsByScope.project : [],
+    global: Array.isArray(existing?.selectedAgentIdsByScope?.global) ? existing.selectedAgentIdsByScope.global : []
+  };
+
+  const nextSkillIds = Array.isArray(selectedSkillIds) ? selectedSkillIds : existingSkillIds;
+  const nextSelectedAgentIdsByScope =
+    selectedAgentIdsByScope && typeof selectedAgentIdsByScope === 'object'
+      ? {
+          project: Array.isArray(selectedAgentIdsByScope.project) ? selectedAgentIdsByScope.project : [],
+          global: Array.isArray(selectedAgentIdsByScope.global) ? selectedAgentIdsByScope.global : []
+        }
+      : existingAgentIdsByScope;
+
   await writeJson(p, {
-    version: 1,
+    version: 2,
     updatedAt: new Date().toISOString(),
-    selectedSkillIds: Array.isArray(selectedSkillIds) ? selectedSkillIds : []
+    selectedSkillIds: nextSkillIds,
+    selectedAgentIdsByScope: nextSelectedAgentIdsByScope
   });
   return p;
 }
 
 module.exports = { loadProfile, saveProfile, profilePath };
-

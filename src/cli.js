@@ -4,7 +4,6 @@
 const { Command } = require('commander');
 
 const { bootstrap } = require('./commands/bootstrap');
-const { selectUi } = require('./commands/select');
 const { where } = require('./commands/where');
 const { update } = require('./commands/update');
 const { uninstall } = require('./commands/uninstall');
@@ -23,25 +22,26 @@ async function main() {
   program
     .command('install')
     .description('安装 skills：按 sources 配置安装全部，或用 Web UI 选择子集安装。')
+    .argument('[repoOrRef]', '可选：指定单个来源（owner/repo、GitHub URL 或 git@...）')
+    .option('--project', '安装到当前项目目录（默认）', false)
     .option('--global', '安装到全局（默认：当前项目）', false)
-    .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
     .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
     .option('--sync', '执行 openskills sync（默认不执行）', false)
     .option('--dry-run', '仅打印将执行的内容，不实际安装', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
     .option('--profile <name>', '选择配置名（默认：来自 config 或 SKILLMANAGER_PROFILE 环境变量）')
     .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
-    .action(async (opts) => {
-      await bootstrap(opts);
+    .action(async (repoOrRef, opts) => {
+      await bootstrap(opts, repoOrRef);
     });
 
   program
     .command('webui')
     .description('打开 Web UI：用于选择并安装（install）或选择并卸载（uninstall）。')
     .option('--mode <install|uninstall>', '模式：install（选择并安装）或 uninstall（选择并卸载）', 'install')
-    .option('--profile <name>', '作用：install 模式下使用/保存到的 profile（默认：使用默认 profile）')
-    .option('--global', '作用：把目标切到全局目录（~/.claude/skills 或 ~/.agent/skills）', false)
-    .option('--universal', '作用：使用 .agent/skills（通用 AGENTS.md 场景；默认是 .claude/skills）', false)
+    .option('--profile <name>', '作用：install/uninstall 模式下使用/保存到的 profile（默认：使用默认 profile）')
+    .option('--project', '作用：安装/卸载到当前项目目录（默认）', false)
+    .option('--global', '作用：把目标切到全局目录（~）', false)
     .option('--output <path>', '作用：sync 输出文件路径（默认：AGENTS.md，需配合 --sync）')
     .option('--sync', '作用：执行 openskills sync（默认不执行）')
     .option('--concurrency <n>', '作用：install 模式下并发拉取/扫描来源仓库，提高速度（默认：3）', '3')
@@ -60,8 +60,8 @@ async function main() {
   program
     .command('update')
     .description('更新 skills（默认按 profile 更新；可选 --sync 生成/更新 AGENTS.md）。')
+    .option('--project', '安装到当前项目目录（默认）', false)
     .option('--global', '安装到全局（默认：当前项目）', false)
-    .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
     .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
     .option('--sync', '执行 openskills sync（默认不执行）', false)
     .option('--profile <name>', '按 profile 选择集更新（会重新安装选中的 skills）')
@@ -74,11 +74,12 @@ async function main() {
 
   program
     .command('uninstall')
-    .description('卸载 skills（从 .claude/skills 或 .agent/skills 删除；可选 --sync 更新 AGENTS.md）。')
+    .description('卸载 skills（按选中 agent 的 project/global 目录删除；可选 --sync 更新 AGENTS.md）。')
     .argument('[skillNames...]', '要卸载的 skill 名称（目录名），可多个')
+    .option('--project', '卸载当前项目目录（默认）', false)
     .option('--global', '卸载全局目录（默认：当前项目）', false)
-    .option('--universal', '使用通用目录 .agent/skills（默认：.claude/skills）', false)
     .option('--all', '卸载目标目录下所有已安装 skills', false)
+    .option('--profile <name>', '读取/保存该 profile 的 agent 选择记忆（默认：使用默认 profile）')
     .option('--output <path>', 'sync 输出文件（默认：AGENTS.md，需配合 --sync）')
     .option('--sync', '执行 openskills sync（默认不执行）', false)
     .action(async (skillNames, opts) => {

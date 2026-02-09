@@ -1,8 +1,54 @@
 # skillmanager（`@wang121ye/skillmanager`）
 
-跨平台（Windows / Linux / macOS）的 **Agent Skills 管理器**：把「官方 skills + 第三方 skills 仓库 + 你自己的 skills 仓库」统一做 **安装（install）**，并可选用 **Web UI 交互式勾选**来安装子集。
+[中文](./README.md) | [English](./README_EN.md)
+
+跨平台（Windows / Linux / macOS）的 **Agent Skills 管理器**：把「官方 skills + 第三方 skills 仓库 + 你自己的 skills 仓库」统一做 **安装（install）/更新（update）/卸载（uninstall）**，并支持按 `project/global` + 多 agent 目录安装。
 
 本项目 **基于 `openskills`** 实现安装与 `AGENTS.md` 同步。
+
+## 30 秒上手
+
+```bash
+# 1) 默认安装（project 作用域），交互选择 skills + agents
+skillmanager install
+
+# 2) 全局安装到 ~ 目录下各 agent 路径
+skillmanager install --global
+
+# 3) 用 Web UI 选择（左侧 agents，右侧 skills 来源标签）
+skillmanager webui
+```
+
+## 为什么好用（相比手动拷贝）
+
+- 一次安装/更新可覆盖多个 agent 目录（不再手工复制同一份 skills）
+- 默认 project、可切 global，路径不用记
+- `install <repoOrRef>` 会自动写入 `sources.json`，后续 `config push/pull` 可同步
+- profile 不只记 skill 选择，还会按 scope 记忆 agent 选择
+- Web UI 支持来源标签、搜索、对“当前可见项”批量全选/反选
+- `openskills sync` 改为显式触发（`--sync`），避免每次操作都改 `AGENTS.md`
+
+## 命令速览（完整）
+
+| 命令 | 作用 | 常用示例 |
+| --- | --- | --- |
+| `skillmanager install [repoOrRef]` | 交互选择 skills + agents 后安装；支持指定单一来源并自动写入 `sources.json` | `skillmanager install --global` |
+| `skillmanager update` | 按 profile 选择集 + scope + agent 选择进行“重装式更新” | `skillmanager update --profile laptop` |
+| `skillmanager uninstall [skillNames...]` | 卸载选中的 skills；先选 agents 再执行删除 | `skillmanager uninstall xlsx` |
+| `skillmanager webui` | Web UI 安装模式（可搜索、按来源标签筛选、可见项批量操作） | `skillmanager webui --project` |
+| `skillmanager webui --mode uninstall` | Web UI 卸载模式 | `skillmanager webui --mode uninstall --global` |
+| `skillmanager source ...` | 管理来源：`list/add/remove/enable/disable` | `skillmanager source add owner/repo` |
+| `skillmanager config ...` | 管理默认 profile 与远端同步配置：`show/set-default-profile/set-remote-profile-url/push/pull` | `skillmanager config push --profile laptop` |
+| `skillmanager paths` | 打印配置目录、缓存目录、仓库缓存目录、manifest 实际路径 | `skillmanager paths` |
+
+## 环境变量速览
+
+| 变量 | 用途 |
+| --- | --- |
+| `SKILLMANAGER_PROFILE` | 临时覆盖默认 profile（等效于多数命令传 `--profile`） |
+| `SKILLMANAGER_PROFILE_URL` | 临时覆盖远端配置 URL（供 `config push/pull` 使用） |
+| `SKILLMANAGER_CONCURRENCY` | 默认并发扫描数（可被命令行 `--concurrency` 覆盖） |
+| `SKILLMANAGER_AUTO_REFRESH` | 仓库缓存自动刷新开关（默认开启；设为 `0` 可关闭） |
 
 ## 环境要求与兼容性（重要）
 
@@ -17,13 +63,6 @@
 常见规避方案：
 
 - **升级 git / Node / openskills**（推荐根治）
-- **改用 SSH 拉取 GitHub 仓库**（绕开 HTTPS/TLS）：
-
-```bash
-export SKILLMANAGER_GIT_PROTOCOL=ssh
-skillmanager webui
-```
-
 - **降低并发**（网络/中间设备对并发连接敏感时）：
 
 ```bash
@@ -73,7 +112,11 @@ skillmanager install
 
 ### 命令行交互式选择（类似 openskills）
 
-默认 `skillmanager install` 会进入交互式选择（按来源分组）。支持：
+默认 `skillmanager install` 会进入两步交互：
+- 第 1 步：选择 skills（按来源分组）
+- 第 2 步：选择要安装到哪些 agents（Supported Agents）
+
+终端交互支持：
 - 空格选择/取消
 - a 全选，i 反选
 - h 顶部，e 底部
@@ -84,14 +127,35 @@ skillmanager install
 
 ```bash
 skillmanager webui
+# 或指定 scope
+skillmanager webui --project
+skillmanager webui --global
 ```
 
-你也可以用某个 profile 名称（会保存选择集到该 profile）。**多数情况下不需要显式传 `--profile`**，直接用默认 profile（通常是 `default` 或你在 `skillmanager config set-default-profile` 里设置的值）即可：
+Web UI 交互特性：
+
+- 左侧 `Supported Agents` 列表独立滚动，快速勾选目标 agent
+- 右侧 skills 按来源标签切换（`全部来源` + 各 source）
+- `全选/全不选/反选` 默认作用于“当前可见 skills”（当前标签 + 当前搜索）
+- 安装与卸载模式都使用同一套 agents + skills 选择体验
+
+你也可以用某个 profile 名称（会保存选择集到该 profile，包含 skills 与按 scope 记忆的 agents）。**多数情况下不需要显式传 `--profile`**，直接用默认 profile（通常是 `default` 或你在 `skillmanager config set-default-profile` 里设置的值）即可：
 
 ```bash
 skillmanager webui --profile laptop
 skillmanager install --profile laptop
 ```
+
+### 3) 直接安装单个来源（并自动写入 sources）
+
+```bash
+skillmanager install https://github.com/wangyendt/wayne-skills
+# 或
+skillmanager install wangyendt/wayne-skills
+```
+
+当你传入 `repoOrRef` 时，`skillmanager` 会自动将该来源写入用户 `sources.json`（已存在则复用），这样后续 `config push/pull` 也能同步这条来源。
+如果该来源在 `sources.json` 里已存在但为禁用状态，安装时会自动启用。
 
 ## 把 `--profile laptop` 设为默认（推荐）
 
@@ -115,7 +179,7 @@ SKILLMANAGER_PROFILE=laptop skillmanager webui
 
 **同步内容包括：**
 - ✅ `sources.json` - 所有 skills 来源仓库配置
-- ✅ `profiles/[profile].json` - 选中的 skills 列表
+- ✅ `profiles/[profile].json` - 选中的 skills 列表 + 按 scope 记忆的 agent 选择
 
 > 安全提示：**开放公共写权限非常危险**，任何人都可以篡改你的配置。更安全的做法是使用签名 URL、私有桶 + 凭证、或 Git 私有仓库。
 
@@ -172,19 +236,27 @@ skillmanager config pull --profile laptop
 skillmanager install --profile laptop
 ```
 
-### 3) 安装位置（交给 openskills）
+### 4) 安装位置与 scope
 
-- 默认：项目级（`./.claude/skills`）
-- `--global`：全局（`~/.claude/skills`）
-- `--universal`：使用通用目录（`.agent/skills` / `~/.agent/skills`）
+- 默认（或显式 `--project`）：安装到当前项目目录下的各 agent 路径
+- `--global`：安装到 `~/` 下的各 agent 全局路径
+- `--project` 与 `--global` 互斥，未指定时等同 `--project`
+- 如果你选择的多个 agents 映射到同一路径，`skillmanager` 会自动去重（同一路径只执行一次安装）
 
 示例：
 
 ```bash
-skillmanager install --global --universal
+# 默认 project
+skillmanager install
+
+# 显式 project
+skillmanager install --project
+
+# global
+skillmanager install --global
 ```
 
-### 4) 同步 `AGENTS.md`
+### 5) 同步 `AGENTS.md`
 
 默认**不执行** `openskills sync`。如需生成/更新当前目录的 `AGENTS.md`，请显式加 `--sync`。
 
@@ -201,12 +273,18 @@ skillmanager install --sync --output AGENTS.md
 ```
 
 > `install` / `update` / `uninstall` / `webui` 均为默认不 sync；只有传 `--sync` 时才会执行 `openskills sync`。
+> `--sync` 与 scope（project/global）解耦：是否 sync 只取决于你是否显式传 `--sync`。
 
-### 5) dry-run（只打印要装什么，不实际安装）
+### 6) dry-run（只打印要装什么，不实际安装）
 
 ```bash
 skillmanager install --dry-run
 ```
+
+`dry-run` 会同时打印：
+
+- 即将安装的 skills（最多前 30 个）
+- 本次解析出的目标目录（按 agent 去重后的目录集合）
 
 ## 更方便地添加/管理第三方仓库
 
@@ -232,13 +310,20 @@ skillmanager source remove superpowers
 
 ### 默认更新（推荐）
 
-默认会优先按 profile 选择集更新（显式 `--profile` 优先，否则使用默认 profile）：
+默认会优先按 profile 选择集更新（显式 `--profile` 优先，否则使用默认 profile），并按该 profile 记忆的 agent 选择 + 当前 scope（默认 project）重装：
 
 ```bash
 skillmanager update
 ```
 
-如果目标 profile 不存在或没有有效选择集，会自动回退到 `openskills update`。
+如果目标 profile 不存在或没有有效选择集，会默认更新“当前可见来源中的全部 skills”。
+
+指定 scope：
+
+```bash
+skillmanager update --project
+skillmanager update --global
+```
 
 ### 指定 profile 更新（子集安装最稳）
 
@@ -259,18 +344,29 @@ skillmanager update --profile laptop
 skillmanager update --openskills
 ```
 
+说明：`--openskills` 会走 openskills 原生更新逻辑，不使用 profile 的 skills/agents 选择集。
+
 ## 卸载 skills
 
-### 用 Web UI 勾选要卸载的已安装 skills（推荐）
+### 用 Web UI 勾选要卸载的 agents + skills（推荐）
 
 ```bash
 skillmanager webui --mode uninstall
 ```
 
-### 直接按名称卸载
+### 直接按名称卸载（仍会先交互选择 agents）
 
 ```bash
 skillmanager uninstall algorithmic-art xlsx
+```
+
+按 scope 卸载：
+
+```bash
+skillmanager uninstall --project
+skillmanager uninstall --global
+# 可选：指定 profile 读取/保存 agent 选择记忆
+skillmanager uninstall --profile laptop
 ```
 
 ### 清空目标目录（危险操作，需要显式 --all）
@@ -278,6 +374,18 @@ skillmanager uninstall algorithmic-art xlsx
 ```bash
 skillmanager uninstall --all
 ```
+
+说明：`--all` 的作用范围是“当前 scope + 当前选中的 agents 对应目录”。
+
+## Web UI 截图（推荐）
+
+建议把截图放到仓库路径：
+
+- `docs/images/webui-overview.png`
+
+README 中可直接引用：
+
+![Skillmanager Web UI](docs/images/webui-overview.png)
 
 ## Skills 来源配置（官方 / 第三方 / 你自己的）
 
@@ -297,6 +405,21 @@ skillmanager paths
 - 官方：`anthropics/skills`
 - 你的：`wangyendt/wayne-skills`
 - 第三方：自行添加（`enabled: true`）
+
+## Agent 路径映射来源（引用）
+
+本项目内置的 `manifests/agents.json` 路径映射，依据以下上游资料整理（非逐字拷贝）：
+
+- 仓库：`vercel-labs/skills`
+- 文档章节：`Supported Agents`
+- 许可证：MIT
+- 访问日期：2026-02-09
+
+参考链接：
+
+- https://github.com/vercel-labs/skills
+- https://github.com/vercel-labs/skills#supported-agents
+- https://github.com/vercel-labs/skills/blob/main/LICENSE
 
 ## 发布到 npm（给你未来用）
 

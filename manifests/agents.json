@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "source": {
+    "repo": "https://github.com/vercel-labs/skills",
+    "section": "Supported Agents",
+    "license": "MIT",
+    "retrievedAt": "2026-02-09"
+  },
+  "agents": [
+    {
+      "id": "amp",
+      "name": "Amp",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.config/agents/skills"
+    },
+    {
+      "id": "kimi-cli",
+      "name": "Kimi Code CLI",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.config/agents/skills"
+    },
+    {
+      "id": "replit",
+      "name": "Replit",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.config/agents/skills"
+    },
+    {
+      "id": "antigravity",
+      "name": "Antigravity",
+      "projectPath": ".agent/skills",
+      "globalPath": "~/.gemini/antigravity/skills"
+    },
+    {
+      "id": "augment",
+      "name": "Augment",
+      "projectPath": ".augment/skills",
+      "globalPath": "~/.augment/skills"
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "projectPath": ".claude/skills",
+      "globalPath": "~/.claude/skills"
+    },
+    {
+      "id": "openclaw",
+      "name": "OpenClaw",
+      "projectPath": "skills",
+      "globalPath": "~/.moltbot/skills"
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "projectPath": ".cline/skills",
+      "globalPath": "~/.cline/skills"
+    },
+    {
+      "id": "codebuddy",
+      "name": "CodeBuddy",
+      "projectPath": ".codebuddy/skills",
+      "globalPath": "~/.codebuddy/skills"
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.codex/skills"
+    },
+    {
+      "id": "command-code",
+      "name": "Command Code",
+      "projectPath": ".commandcode/skills",
+      "globalPath": "~/.commandcode/skills"
+    },
+    {
+      "id": "continue",
+      "name": "Continue",
+      "projectPath": ".continue/skills",
+      "globalPath": "~/.continue/skills"
+    },
+    {
+      "id": "crush",
+      "name": "Crush",
+      "projectPath": ".crush/skills",
+      "globalPath": "~/.config/crush/skills"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "projectPath": ".cursor/skills",
+      "globalPath": "~/.cursor/skills"
+    },
+    {
+      "id": "droid",
+      "name": "Droid",
+      "projectPath": ".factory/skills",
+      "globalPath": "~/.factory/skills"
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.gemini/skills"
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.copilot/skills"
+    },
+    {
+      "id": "goose",
+      "name": "Goose",
+      "projectPath": ".goose/skills",
+      "globalPath": "~/.config/goose/skills"
+    },
+    {
+      "id": "junie",
+      "name": "Junie",
+      "projectPath": ".junie/skills",
+      "globalPath": "~/.junie/skills"
+    },
+    {
+      "id": "iflow-cli",
+      "name": "iFlow CLI",
+      "projectPath": ".iflow/skills",
+      "globalPath": "~/.iflow/skills"
+    },
+    {
+      "id": "kilo",
+      "name": "Kilo Code",
+      "projectPath": ".kilocode/skills",
+      "globalPath": "~/.kilocode/skills"
+    },
+    {
+      "id": "kiro-cli",
+      "name": "Kiro CLI",
+      "projectPath": ".kiro/skills",
+      "globalPath": "~/.kiro/skills"
+    },
+    {
+      "id": "kode",
+      "name": "Kode",
+      "projectPath": ".kode/skills",
+      "globalPath": "~/.kode/skills"
+    },
+    {
+      "id": "mcpjam",
+      "name": "MCPJam",
+      "projectPath": ".mcpjam/skills",
+      "globalPath": "~/.mcpjam/skills"
+    },
+    {
+      "id": "mistral-vibe",
+      "name": "Mistral Vibe",
+      "projectPath": ".vibe/skills",
+      "globalPath": "~/.vibe/skills"
+    },
+    {
+      "id": "mux",
+      "name": "Mux",
+      "projectPath": ".mux/skills",
+      "globalPath": "~/.mux/skills"
+    },
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.config/opencode/skills"
+    },
+    {
+      "id": "openhands",
+      "name": "OpenHands",
+      "projectPath": ".openhands/skills",
+      "globalPath": "~/.openhands/skills"
+    },
+    {
+      "id": "pi",
+      "name": "Pi",
+      "projectPath": ".pi/skills",
+      "globalPath": "~/.pi/agent/skills"
+    },
+    {
+      "id": "qoder",
+      "name": "Qoder",
+      "projectPath": ".qoder/skills",
+      "globalPath": "~/.qoder/skills"
+    },
+    {
+      "id": "qwen-code",
+      "name": "Qwen Code",
+      "projectPath": ".qwen/skills",
+      "globalPath": "~/.qwen/skills"
+    },
+    {
+      "id": "roo",
+      "name": "Roo Code",
+      "projectPath": ".roo/skills",
+      "globalPath": "~/.roo/skills"
+    },
+    {
+      "id": "trae",
+      "name": "Trae",
+      "projectPath": ".trae/skills",
+      "globalPath": "~/.trae/skills"
+    },
+    {
+      "id": "trae-cn",
+      "name": "Trae CN",
+      "projectPath": ".trae/skills",
+      "globalPath": "~/.trae-cn/skills"
+    },
+    {
+      "id": "windsurf",
+      "name": "Windsurf",
+      "projectPath": ".windsurf/skills",
+      "globalPath": "~/.codeium/windsurf/skills"
+    },
+    {
+      "id": "zencoder",
+      "name": "Zencoder",
+      "projectPath": ".zencoder/skills",
+      "globalPath": "~/.zencoder/skills"
+    },
+    {
+      "id": "neovate",
+      "name": "Neovate",
+      "projectPath": ".neovate/skills",
+      "globalPath": "~/.neovate/skills"
+    },
+    {
+      "id": "pochi",
+      "name": "Pochi",
+      "projectPath": ".pochi/skills",
+      "globalPath": "~/.pochi/skills"
+    },
+    {
+      "id": "adal",
+      "name": "AdaL",
+      "projectPath": ".adal/skills",
+      "globalPath": "~/.adal/skills"
+    }
+  ]
+}
