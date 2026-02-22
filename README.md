@@ -413,7 +413,7 @@ skillmanager paths
 - 仓库：`vercel-labs/skills`
 - 文档章节：`Supported Agents`
 - 许可证：MIT
-- 访问日期：2026-02-09
+- 访问日期：2026-02-23
 
 参考链接：
 

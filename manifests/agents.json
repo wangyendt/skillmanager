@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-02-09"
+    "retrievedAt": "2026-02-23"
   },
   "agents": [
     {
@@ -22,6 +22,12 @@
     {
       "id": "replit",
       "name": "Replit",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.config/agents/skills"
+    },
+    {
+      "id": "universal",
+      "name": "Universal",
       "projectPath": ".agents/skills",
       "globalPath": "~/.config/agents/skills"
     },
@@ -47,7 +53,7 @@
       "id": "openclaw",
       "name": "OpenClaw",
       "projectPath": "skills",
-      "globalPath": "~/.moltbot/skills"
+      "globalPath": "~/.openclaw/skills"
     },
     {
       "id": "cline",
@@ -80,6 +86,12 @@
       "globalPath": "~/.continue/skills"
     },
     {
+      "id": "cortex",
+      "name": "Cortex Code",
+      "projectPath": ".cortex/skills",
+      "globalPath": "~/.snowflake/cortex/skills"
+    },
+    {
       "id": "crush",
       "name": "Crush",
       "projectPath": ".crush/skills",
@@ -88,7 +100,7 @@
     {
       "id": "cursor",
       "name": "Cursor",
-      "projectPath": ".cursor/skills",
+      "projectPath": ".agents/skills",
       "globalPath": "~/.cursor/skills"
     },
     {
