@@ -49,6 +49,12 @@ async function isRepoStale(repoGit) {
   return localHead !== remoteHead;
 }
 
+function buildCloneArgs(preferCompatibleClone = false) {
+  const args = ['--depth', '1', '--single-branch'];
+  if (!preferCompatibleClone) args.push('--filter=blob:none');
+  return args;
+}
+
 async function cloneRepo({ git, repoUrl, repoDir, cloneArgs }) {
   await rmDir(repoDir);
   await ensureDir(repoDir);
@@ -56,7 +62,7 @@ async function cloneRepo({ git, repoUrl, repoDir, cloneArgs }) {
   return repoDir;
 }
 
-async function ensureRepo({ reposDir, source, forceRefresh = false }) {
+async function ensureRepo({ reposDir, source, forceRefresh = false, preferCompatibleClone = false }) {
   if (!source?.repo) {
     throw new Error(`Invalid source repo for ${source?.id || '<unknown>'}`);
   }
@@ -66,7 +72,7 @@ async function ensureRepo({ reposDir, source, forceRefresh = false }) {
 
   const gitDir = path.join(repoDir, '.git');
   const git = simpleGit();
-  const cloneArgs = ['--depth', '1', '--single-branch', '--filter=blob:none'];
+  const cloneArgs = buildCloneArgs(preferCompatibleClone);
 
   if (!(await fileExists(gitDir))) {
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -80,6 +86,14 @@ async function ensureRepo({ reposDir, source, forceRefresh = false }) {
       }
     }
     return repoDir;
+  }
+
+  if (forceRefresh) {
+    // Force refresh must replace the cached repo even when HEAD appears unchanged.
+    // This recovers from broken or incomplete local clones.
+    // eslint-disable-next-line no-console
+    console.warn(`强制刷新来源缓存：${source.id}${preferCompatibleClone ? '（兼容模式）' : ''}…`);
+    return await cloneRepo({ git, repoUrl: source.repo, repoDir, cloneArgs });
   }
 
   const repoGit = simpleGit(repoDir);
@@ -118,4 +132,3 @@ async function ensureRepo({ reposDir, source, forceRefresh = false }) {
 }
 
 module.exports = { ensureRepo };
-

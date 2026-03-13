@@ -3,8 +3,7 @@ const fsp = require('fs/promises');
 const { getAppPaths } = require('../lib/paths');
 const { ensureDir } = require('../lib/fs');
 const { loadSourcesManifest } = require('../lib/manifest');
-const { ensureRepo } = require('../lib/git');
-const { scanSkillsInRepo } = require('../lib/scan');
+const { loadSkillsFromSource } = require('../lib/source-load');
 const { loadProfile, saveProfile } = require('../lib/profiles');
 const { getEffectiveDefaultProfile } = require('../lib/config');
 const { mapWithConcurrency } = require('../lib/concurrency');
@@ -127,11 +126,10 @@ async function webui(opts) {
   const skillsById = new Map();
   const perSource = await mapWithConcurrency(enabledSources, concurrency, async (s) => {
     try {
-      const repoDir = await ensureRepo({ reposDir: paths.reposDir, source: s, forceRefresh: !!opts?.forceRefresh });
-      const skills = await scanSkillsInRepo({
-        sourceId: s.id,
-        sourceName: s.name || s.id,
-        repoDir
+      const { skills } = await loadSkillsFromSource({
+        reposDir: paths.reposDir,
+        source: s,
+        forceRefresh: !!opts?.forceRefresh
       });
       return { source: s, skills };
     } catch (err) {

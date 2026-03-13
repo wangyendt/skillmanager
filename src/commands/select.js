@@ -1,8 +1,7 @@
 const { getAppPaths } = require('../lib/paths');
 const { ensureDir } = require('../lib/fs');
 const { loadSourcesManifest } = require('../lib/manifest');
-const { ensureRepo } = require('../lib/git');
-const { scanSkillsInRepo } = require('../lib/scan');
+const { loadSkillsFromSource } = require('../lib/source-load');
 const { loadProfile, saveProfile } = require('../lib/profiles');
 const { mapWithConcurrency } = require('../lib/concurrency');
 const { getEffectiveDefaultProfile } = require('../lib/config');
@@ -24,11 +23,9 @@ async function selectUi(opts) {
     try {
       // eslint-disable-next-line no-console
       console.log(`\n==> 扫描来源：${s.name || s.id}`);
-      const repoDir = await ensureRepo({ reposDir: paths.reposDir, source: s });
-      const skills = await scanSkillsInRepo({
-        sourceId: s.id,
-        sourceName: s.name || s.id,
-        repoDir
+      const { skills } = await loadSkillsFromSource({
+        reposDir: paths.reposDir,
+        source: s
       });
       // eslint-disable-next-line no-console
       console.log(`    找到 ${skills.length} 个 skills`);
