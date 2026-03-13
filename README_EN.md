@@ -333,11 +333,15 @@ Built-in `manifests/agents.json` is compiled based on:
 - Repository: `vercel-labs/skills`
 - Section: `Supported Agents`
 - License: MIT
-- Retrieved at: 2026-02-23
+- Retrieved at: 2026-03-13
+
+Maintenance rule:
+
+- Treat the upstream `Supported Agents` table as the single source of truth for future agent mapping updates
+- See `docs/agent-mapping-maintenance.md` for the update workflow
 
 References:
 
 - https://github.com/vercel-labs/skills
-- https://github.com/vercel-labs/skills#supported-agents
+- https://github.com/vercel-labs/skills?tab=readme-ov-file#supported-agents
 - https://github.com/vercel-labs/skills/blob/main/LICENSE
-

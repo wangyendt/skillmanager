@@ -413,12 +413,17 @@ skillmanager paths
 - 仓库：`vercel-labs/skills`
 - 文档章节：`Supported Agents`
 - 许可证：MIT
-- 访问日期：2026-02-23
+- 访问日期：2026-03-13
+
+维护约定：
+
+- 以后更新 agents 映射时，以 `Supported Agents` 表格为唯一来源
+- 维护流程见 `docs/agent-mapping-maintenance.md`
 
 参考链接：
 
 - https://github.com/vercel-labs/skills
-- https://github.com/vercel-labs/skills#supported-agents
+- https://github.com/vercel-labs/skills?tab=readme-ov-file#supported-agents
 - https://github.com/vercel-labs/skills/blob/main/LICENSE
 
 ## 发布到 npm（给你未来用）

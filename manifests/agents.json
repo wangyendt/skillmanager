@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-02-23"
+    "retrievedAt": "2026-03-13"
   },
   "agents": [
     {
@@ -58,8 +58,8 @@
     {
       "id": "cline",
       "name": "Cline",
-      "projectPath": ".cline/skills",
-      "globalPath": "~/.cline/skills"
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
     },
     {
       "id": "codebuddy",
