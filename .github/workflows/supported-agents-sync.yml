@@ -3,7 +3,7 @@ name: Sync Supported Agents
 on:
   workflow_dispatch:
   schedule:
-    - cron: '19 2 * * *'
+    - cron: '0 19 * * *'
 
 concurrency:
   group: supported-agents-sync-${{ github.ref }}

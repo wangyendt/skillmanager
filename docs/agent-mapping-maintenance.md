@@ -27,6 +27,7 @@ Automation:
 - CI workflow: `.github/workflows/supported-agents-sync.yml`
 - Main release workflow: `.github/workflows/release-on-main.yml`
 - npm publish workflow: `.github/workflows/publish-npm.yml`
+- Scheduled sync runs daily at `03:00` Asia/Shanghai time (`19:00 UTC` in GitHub cron syntax).
 - Sync mode is controlled by repository variable `SUPPORTED_AGENTS_SYNC_MODE`:
   - `pr`: detect upstream changes, open a PR, optional patch bump
   - `direct`: commit and push directly to the current branch, optional patch bump; npm publish is then triggered by the separate publish workflow on `main`
