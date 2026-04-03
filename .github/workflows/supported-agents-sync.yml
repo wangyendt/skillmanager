@@ -12,6 +12,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   sync-supported-agents:
@@ -156,6 +157,22 @@ jobs:
           labels: |
             automation
             agents-sync
+
+      - name: Check whether synced version already exists on npm
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true'
+        id: synced_npm_version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          if npm view "@wang121ye/skillmanager@${VERSION}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Publish package in direct mode
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true' && steps.synced_npm_version.outputs.exists != 'true'
+        run: npm publish --access public
 
       - name: Setup Python for Feishu notification
         if: steps.summary.outputs.changed == 'true'
