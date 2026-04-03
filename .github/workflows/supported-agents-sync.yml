@@ -103,10 +103,14 @@ jobs:
             agents-sync
 
       - name: Publish package in direct mode
-        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true' && secrets.NPM_TOKEN != ''
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NPM_TOKEN is empty; skip publish."
+            exit 0
+          fi
           VERSION=$(node -p "require('./package.json').version")
           if npm view "@wang121ye/skillmanager@${VERSION}" version >/dev/null 2>&1; then
             echo "Version ${VERSION} already exists on npm; skip publish."
