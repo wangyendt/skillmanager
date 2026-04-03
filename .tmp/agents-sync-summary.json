@@ -1,0 +1,63 @@
+{
+  "changed": true,
+  "sourceUrl": "https://raw.githubusercontent.com/vercel-labs/skills/main/README.md",
+  "retrievedAt": "2026-04-03",
+  "counts": {
+    "current": 41,
+    "next": 45,
+    "added": 4,
+    "removed": 0,
+    "updated": 1
+  },
+  "added": [
+    {
+      "id": "bob",
+      "name": "IBM Bob",
+      "projectPath": ".bob/skills",
+      "globalPath": "~/.bob/skills"
+    },
+    {
+      "id": "warp",
+      "name": "Warp",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
+      "id": "deepagents",
+      "name": "Deep Agents",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.deepagents/agent/skills"
+    },
+    {
+      "id": "firebender",
+      "name": "Firebender",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.firebender/skills"
+    }
+  ],
+  "removed": [],
+  "updated": [
+    {
+      "id": "antigravity",
+      "before": {
+        "id": "antigravity",
+        "name": "Antigravity",
+        "projectPath": ".agent/skills",
+        "globalPath": "~/.gemini/antigravity/skills"
+      },
+      "after": {
+        "id": "antigravity",
+        "name": "Antigravity",
+        "projectPath": ".agents/skills",
+        "globalPath": "~/.gemini/antigravity/skills"
+      },
+      "changes": {
+        "projectPath": {
+          "before": ".agent/skills",
+          "after": ".agents/skills"
+        }
+      }
+    }
+  ],
+  "orderChanged": false
+}
