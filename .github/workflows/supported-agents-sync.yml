@@ -12,7 +12,6 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
-  id-token: write
 
 jobs:
   sync-supported-agents:
@@ -21,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -69,6 +70,16 @@ jobs:
             echo "use_pat=true" >> "${GITHUB_OUTPUT}"
           else
             echo "use_pat=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Validate direct publish automation prerequisites
+        if: steps.mode.outputs.mode == 'direct' && vars.AUTO_PUBLISH_NPM == 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "${GH_PAT}" ]; then
+            echo "AUTO_PUBLISH_NPM=true with direct mode requires GH_PAT so the sync push can trigger publish-npm.yml."
+            exit 1
           fi
 
       - name: Cache summary payload
@@ -157,22 +168,6 @@ jobs:
           labels: |
             automation
             agents-sync
-
-      - name: Check whether synced version already exists on npm
-        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true'
-        id: synced_npm_version
-        run: |
-          VERSION="$(node -p "require('./package.json').version")"
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          if npm view "@wang121ye/skillmanager@${VERSION}" version >/dev/null 2>&1; then
-            echo "exists=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "exists=false" >> "${GITHUB_OUTPUT}"
-          fi
-
-      - name: Publish package in direct mode
-        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true' && steps.synced_npm_version.outputs.exists != 'true'
-        run: npm publish --access public
 
       - name: Setup Python for Feishu notification
         if: steps.summary.outputs.changed == 'true'
