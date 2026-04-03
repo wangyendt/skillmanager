@@ -53,7 +53,7 @@ jobs:
         env:
           VERSION: ${{ steps.npm_version.outputs.version }}
         run: |
-          TAG_NAME="v${VERSION}"
+          TAG_NAME="${VERSION}"
           if git ls-remote --tags origin "refs/tags/${TAG_NAME}" | grep -q "${TAG_NAME}"; then
             echo "Tag ${TAG_NAME} already exists; skip."
             exit 0
