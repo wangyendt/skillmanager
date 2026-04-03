@@ -25,6 +25,7 @@ Automation:
 - Local check: `npm run agents:check`
 - Local sync: `npm run agents:sync`
 - CI workflow: `.github/workflows/supported-agents-sync.yml`
+- Main release workflow: `.github/workflows/release-on-main.yml`
 - npm publish workflow: `.github/workflows/publish-npm.yml`
 - Sync mode is controlled by repository variable `SUPPORTED_AGENTS_SYNC_MODE`:
   - `pr`: detect upstream changes, open a PR, optional patch bump
@@ -36,6 +37,7 @@ Automation:
   - `LARK_APP_SECRET`
   - `LARK_CHAT_ID` or `LARK_USER_OPEN_ID`
 - Auto npm publish is also optional. Set repository variable `AUTO_BUMP_NPM_VERSION=true` to patch-bump during sync, and set `AUTO_PUBLISH_NPM=true` to enable publishing when `package.json` or `package-lock.json` changes on `main`.
+- Normal `main` pushes are also covered: if a push does not already change the package version, `release-on-main.yml` will patch-bump `package.json` and `package-lock.json`, push that commit back to `main`, and let `publish-npm.yml` publish the new version.
 - npm publishing now uses npm trusted publishing (OIDC) from GitHub Actions. Configure the package-level trusted publisher on npm for:
   - Owner: `wangyendt`
   - Repository: `skillmanager`

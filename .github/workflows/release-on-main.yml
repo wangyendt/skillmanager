@@ -1,0 +1,71 @@
+name: Release On Main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-on-main-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    if: ${{ !startsWith(github.event.head_commit.message || '', 'chore(release): bump version to ') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Detect whether this push already changed package version
+        id: version_change
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          CURRENT_VERSION="$(node -p "require('./package.json').version")"
+          BEFORE_VERSION=""
+
+          if [ -n "${BEFORE_SHA}" ] && [ "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+            if git cat-file -e "${BEFORE_SHA}:package.json" 2>/dev/null; then
+              BEFORE_VERSION="$(git show "${BEFORE_SHA}:package.json" | node -e "let raw=''; process.stdin.on('data', c => raw += c); process.stdin.on('end', () => process.stdout.write(JSON.parse(raw).version || ''));")"
+            fi
+          fi
+
+          echo "current_version=${CURRENT_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "before_version=${BEFORE_VERSION}" >> "${GITHUB_OUTPUT}"
+
+          if [ -n "${BEFORE_VERSION}" ] && [ "${BEFORE_VERSION}" != "${CURRENT_VERSION}" ]; then
+            echo "version_changed=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "version_changed=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Bump npm patch version
+        if: steps.version_change.outputs.version_changed != 'true'
+        run: npm version patch --no-git-tag-version
+
+      - name: Commit bumped version
+        if: steps.version_change.outputs.version_changed != 'true'
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(release): bump version to ${VERSION}"
+          git push origin "HEAD:${{ github.ref_name }}"

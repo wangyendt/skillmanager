@@ -11,7 +11,12 @@ const DEFAULT_SUMMARY_PATH = null;
 const SOURCE_REPO = 'https://github.com/vercel-labs/skills';
 const SOURCE_SECTION = 'Supported Agents';
 const SOURCE_LICENSE = 'MIT';
-const EXPECTED_TABLE_HEADERS = ['Name', 'Agent ID', 'Project', 'Global'];
+const EXPECTED_TABLE_HEADERS = [
+  ['Name', 'Agent'],
+  ['Agent ID', '--agent'],
+  ['Project', 'Project Path'],
+  ['Global', 'Global Path']
+];
 const MIN_EXPECTED_AGENT_COUNT = 30;
 const MAX_REMOVAL_RATIO = 0.2;
 const MAX_ABSOLUTE_REMOVALS = 5;
@@ -143,8 +148,12 @@ function parseSupportedAgentsTable(markdown) {
     throw new Error('`Supported Agents` 表头格式异常。');
   }
   for (let i = 0; i < EXPECTED_TABLE_HEADERS.length; i += 1) {
-    if (stripBackticks(headerCols[i]) !== EXPECTED_TABLE_HEADERS[i]) {
-      throw new Error(`\`Supported Agents\` 表头第 ${i + 1} 列异常，预期为 \`${EXPECTED_TABLE_HEADERS[i]}\`，实际为 \`${stripBackticks(headerCols[i])}\``);
+    const actualHeader = stripBackticks(headerCols[i]);
+    const expectedHeaders = EXPECTED_TABLE_HEADERS[i];
+    if (!expectedHeaders.includes(actualHeader)) {
+      throw new Error(
+        `\`Supported Agents\` 表头第 ${i + 1} 列异常，预期为 ${expectedHeaders.map((item) => `\`${item}\``).join(' 或 ')}，实际为 \`${actualHeader}\``
+      );
     }
   }
 
