@@ -59,6 +59,17 @@ jobs:
         run: |
           node -e "const fs=require('fs'); const s=JSON.parse(fs.readFileSync('.tmp/agents-sync-summary.json','utf8')); const out=process.env.GITHUB_OUTPUT; fs.appendFileSync(out, 'changed=' + (s.changed ? 'true' : 'false') + '\n'); fs.appendFileSync(out, 'added=' + s.counts.added + '\n'); fs.appendFileSync(out, 'removed=' + s.counts.removed + '\n'); fs.appendFileSync(out, 'updated=' + s.counts.updated + '\n');"
 
+      - name: Resolve PR token
+        id: pr_token
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "${GH_PAT}" ]; then
+            echo "use_pat=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "use_pat=false" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Bump npm patch version
         if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode != 'notify' && vars.AUTO_BUMP_NPM_VERSION == 'true'
         run: npm version patch --no-git-tag-version
@@ -81,10 +92,33 @@ jobs:
           echo "commit_url=${{ github.server_url }}/${{ github.repository }}/commit/${COMMIT_SHA}" >> "${GITHUB_OUTPUT}"
 
       - name: Create pull request
-        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'pr'
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'pr' && steps.pr_token.outputs.use_pat != 'true'
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
+          commit-message: "chore: sync supported agents manifest"
+          branch: "automation/supported-agents-sync"
+          delete-branch: true
+          title: "chore: sync supported agents manifest"
+          body: |
+            This PR was generated automatically from the upstream Supported Agents table:
+            - Source: https://github.com/vercel-labs/skills?tab=readme-ov-file#supported-agents
+            - Added: ${{ steps.summary.outputs.added }}
+            - Removed: ${{ steps.summary.outputs.removed }}
+            - Updated: ${{ steps.summary.outputs.updated }}
+
+            The workflow updated `manifests/agents.json` and refreshed README retrieval dates.
+            If `AUTO_BUMP_NPM_VERSION=true`, the package version was also patch-bumped in this branch.
+          labels: |
+            automation
+            agents-sync
+
+      - name: Create pull request with PAT
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'pr' && steps.pr_token.outputs.use_pat == 'true'
+        id: cpr_pat
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_PAT }}
           commit-message: "chore: sync supported agents manifest"
           branch: "automation/supported-agents-sync"
           delete-branch: true
@@ -142,7 +176,7 @@ jobs:
             --summary-json .tmp/agents-sync-summary.json \
             --repo "${{ github.repository }}" \
             --mode "${{ steps.mode.outputs.mode }}" \
-            --pr-url "${{ steps.cpr.outputs.pull-request-url }}" \
+            --pr-url "${{ steps.cpr.outputs.pull-request-url || steps.cpr_pat.outputs.pull-request-url }}" \
             --commit-url "${{ steps.direct_push.outputs.commit_url }}" \
             --run-url "${GITHUB_RUN_URL}" \
             --title "skillmanager upstream agent sync"
