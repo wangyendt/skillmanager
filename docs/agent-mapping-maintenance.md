@@ -25,13 +25,19 @@ Automation:
 - Local check: `npm run agents:check`
 - Local sync: `npm run agents:sync`
 - CI workflow: `.github/workflows/supported-agents-sync.yml`
+- npm publish workflow: `.github/workflows/publish-npm.yml`
 - Sync mode is controlled by repository variable `SUPPORTED_AGENTS_SYNC_MODE`:
   - `pr`: detect upstream changes, open a PR, optional patch bump
-  - `direct`: commit and push directly to the current branch, optional patch bump and npm publish
+  - `direct`: commit and push directly to the current branch, optional patch bump; npm publish is then triggered by the separate publish workflow on `main`
   - `notify`: only detect and notify, do not push code
 - Default CI behavior is conservative: if `SUPPORTED_AGENTS_SYNC_MODE` is unset, it falls back to `pr`.
 - Feishu notification is optional via `scripts/send_lark_notification.py` and these GitHub secrets:
   - `LARK_APP_ID`
   - `LARK_APP_SECRET`
   - `LARK_CHAT_ID` or `LARK_USER_OPEN_ID`
-- Auto npm publish is also optional. Set repository variable `AUTO_BUMP_NPM_VERSION=true` to patch-bump on sync PRs, and set `AUTO_PUBLISH_NPM=true` plus secret `NPM_TOKEN` to publish on pushes that contain a new package version.
+- Auto npm publish is also optional. Set repository variable `AUTO_BUMP_NPM_VERSION=true` to patch-bump during sync, and set `AUTO_PUBLISH_NPM=true` to enable publishing when `package.json` or `package-lock.json` changes on `main`.
+- npm publishing now uses npm trusted publishing (OIDC) from GitHub Actions. Configure the package-level trusted publisher on npm for:
+  - Owner: `wangyendt`
+  - Repository: `skillmanager`
+  - Workflow file: `publish-npm.yml`
+- `NPM_TOKEN` is no longer required for publishing after trusted publishing is configured.

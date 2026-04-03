@@ -11,6 +11,10 @@ const DEFAULT_SUMMARY_PATH = null;
 const SOURCE_REPO = 'https://github.com/vercel-labs/skills';
 const SOURCE_SECTION = 'Supported Agents';
 const SOURCE_LICENSE = 'MIT';
+const EXPECTED_TABLE_HEADERS = ['Name', 'Agent ID', 'Project', 'Global'];
+const MIN_EXPECTED_AGENT_COUNT = 30;
+const MAX_REMOVAL_RATIO = 0.2;
+const MAX_ABSOLUTE_REMOVALS = 5;
 
 function parseArgs(argv) {
   const args = {
@@ -134,6 +138,16 @@ function parseSupportedAgentsTable(markdown) {
     throw new Error('`Supported Agents` 表格格式异常。');
   }
 
+  const headerCols = parseMarkdownTableRow(lines[0]);
+  if (!headerCols || headerCols.length < EXPECTED_TABLE_HEADERS.length) {
+    throw new Error('`Supported Agents` 表头格式异常。');
+  }
+  for (let i = 0; i < EXPECTED_TABLE_HEADERS.length; i += 1) {
+    if (stripBackticks(headerCols[i]) !== EXPECTED_TABLE_HEADERS[i]) {
+      throw new Error(`\`Supported Agents\` 表头第 ${i + 1} 列异常，预期为 \`${EXPECTED_TABLE_HEADERS[i]}\`，实际为 \`${stripBackticks(headerCols[i])}\``);
+    }
+  }
+
   const dataLines = lines.slice(2).filter((line) => !/^\|\s*-+\s*\|/.test(line));
   const agents = [];
 
@@ -152,6 +166,9 @@ function parseSupportedAgentsTable(markdown) {
     if (names.length !== ids.length) {
       throw new Error(`名称数与 agent id 数不一致: ${line}`);
     }
+    if (!projectPath || !globalPath) {
+      throw new Error(`Project/Global 路径不能为空: ${line}`);
+    }
 
     for (let i = 0; i < ids.length; i += 1) {
       agents.push({
@@ -164,6 +181,77 @@ function parseSupportedAgentsTable(markdown) {
   }
 
   return agents;
+}
+
+function validatePathShape(fieldName, value, { allowTilde = false } = {}) {
+  if (!value) {
+    throw new Error(`${fieldName} 不能为空。`);
+  }
+
+  if (allowTilde && value === '~') {
+    return;
+  }
+
+  const looksLikeRelativePath =
+    value.startsWith('./') ||
+    value.startsWith('../') ||
+    value.startsWith('.') ||
+    value.startsWith('/') ||
+    /^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9._-]+)*$/.test(value);
+  const looksLikeHomePath = allowTilde && value.startsWith('~/');
+
+  if (!looksLikeRelativePath && !looksLikeHomePath) {
+    throw new Error(`${fieldName} 路径格式异常：${value}`);
+  }
+
+  if (/\s/.test(value)) {
+    throw new Error(`${fieldName} 路径不应包含空白字符：${value}`);
+  }
+  if (value.includes('://')) {
+    throw new Error(`${fieldName} 不应为 URL：${value}`);
+  }
+}
+
+function validateAgents(nextAgents, currentAgents) {
+  if (!Array.isArray(nextAgents) || nextAgents.length < MIN_EXPECTED_AGENT_COUNT) {
+    throw new Error(
+      `解析得到的 agent 数量异常：${Array.isArray(nextAgents) ? nextAgents.length : 'N/A'}，低于最小阈值 ${MIN_EXPECTED_AGENT_COUNT}`
+    );
+  }
+
+  const seenIds = new Set();
+  for (const agent of nextAgents) {
+    const normalized = normalizeAgentForCompare(agent);
+    if (!normalized.id) {
+      throw new Error('存在空的 agent id。');
+    }
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(normalized.id)) {
+      throw new Error(`agent id 格式异常：${normalized.id}`);
+    }
+    if (seenIds.has(normalized.id)) {
+      throw new Error(`检测到重复的 agent id：${normalized.id}`);
+    }
+    seenIds.add(normalized.id);
+
+    if (!normalized.name) {
+      throw new Error(`agent name 不能为空：${normalized.id}`);
+    }
+
+    validatePathShape(`projectPath(${normalized.id})`, normalized.projectPath);
+    validatePathShape(`globalPath(${normalized.id})`, normalized.globalPath, { allowTilde: true });
+  }
+
+  if (Array.isArray(currentAgents) && currentAgents.length > 0) {
+    const minSafeCount = Math.max(
+      MIN_EXPECTED_AGENT_COUNT,
+      Math.ceil(currentAgents.length * (1 - MAX_REMOVAL_RATIO))
+    );
+    if (nextAgents.length < minSafeCount) {
+      throw new Error(
+        `解析结果数量骤减：当前 ${currentAgents.length}，新结果 ${nextAgents.length}，低于安全阈值 ${minSafeCount}`
+      );
+    }
+  }
 }
 
 function normalizeAgentForCompare(agent) {
@@ -288,8 +376,15 @@ async function main() {
   const currentAgents = Array.isArray(currentManifest?.agents) ? currentManifest.agents : [];
   const markdown = await fetchSourceMarkdown(args);
   const nextAgents = parseSupportedAgentsTable(markdown);
+  validateAgents(nextAgents, currentAgents);
   const retrievedAt = todayIsoDate();
   const diff = diffAgents(currentAgents, nextAgents);
+
+  if (diff.removed.length > Math.max(MAX_ABSOLUTE_REMOVALS, Math.ceil(currentAgents.length * MAX_REMOVAL_RATIO))) {
+    throw new Error(
+      `检测到异常删除：当前 ${currentAgents.length} 个 agent，本次删除 ${diff.removed.length} 个，已超过安全阈值`
+    );
+  }
 
   const summary = {
     changed: diff.changed,
@@ -349,5 +444,6 @@ module.exports = {
   parseSupportedAgentsTable,
   diffAgents,
   normalizePathValue,
-  extractSupportedAgentsSection
+  extractSupportedAgentsSection,
+  validateAgents
 };
