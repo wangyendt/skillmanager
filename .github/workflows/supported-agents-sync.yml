@@ -108,6 +108,12 @@ jobs:
           commit-message: "chore: sync supported agents manifest"
           branch: "automation/supported-agents-sync"
           delete-branch: true
+          add-paths: |
+            manifests/agents.json
+            README.md
+            README_EN.md
+            package.json
+            package-lock.json
           title: "chore: sync supported agents manifest"
           body: |
             This PR was generated automatically from the upstream Supported Agents table:
@@ -131,6 +137,12 @@ jobs:
           commit-message: "chore: sync supported agents manifest"
           branch: "automation/supported-agents-sync"
           delete-branch: true
+          add-paths: |
+            manifests/agents.json
+            README.md
+            README_EN.md
+            package.json
+            package-lock.json
           title: "chore: sync supported agents manifest"
           body: |
             This PR was generated automatically from the upstream Supported Agents table:
