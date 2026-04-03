@@ -1,0 +1,144 @@
+name: Sync Supported Agents
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 2 * * *'
+
+concurrency:
+  group: supported-agents-sync-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-supported-agents:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve workflow mode
+        id: mode
+        run: |
+          MODE="${{ vars.SUPPORTED_AGENTS_SYNC_MODE }}"
+          case "$MODE" in
+            direct|pr|notify) ;;
+            *) MODE="pr" ;;
+          esac
+          echo "mode=${MODE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Sync manifest from upstream README
+        run: |
+          mkdir -p .tmp
+          if [ "${{ steps.mode.outputs.mode }}" = "notify" ]; then
+            set +e
+            node scripts/sync-supported-agents.js --check --summary-json .tmp/agents-sync-summary.json
+            STATUS=$?
+            set -e
+            if [ "${STATUS}" -ne 0 ] && [ "${STATUS}" -ne 1 ]; then
+              exit "${STATUS}"
+            fi
+          else
+            node scripts/sync-supported-agents.js --write --summary-json .tmp/agents-sync-summary.json
+          fi
+
+      - name: Read sync summary
+        id: summary
+        run: |
+          node -e "const fs=require('fs'); const s=JSON.parse(fs.readFileSync('.tmp/agents-sync-summary.json','utf8')); const out=process.env.GITHUB_OUTPUT; fs.appendFileSync(out, 'changed=' + (s.changed ? 'true' : 'false') + '\n'); fs.appendFileSync(out, 'added=' + s.counts.added + '\n'); fs.appendFileSync(out, 'removed=' + s.counts.removed + '\n'); fs.appendFileSync(out, 'updated=' + s.counts.updated + '\n');"
+
+      - name: Bump npm patch version
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode != 'notify' && vars.AUTO_BUMP_NPM_VERSION == 'true'
+        run: npm version patch --no-git-tag-version
+
+      - name: Commit and push directly
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct'
+        id: direct_push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifests/agents.json README.md README_EN.md package.json package-lock.json
+          if git diff --cached --quiet; then
+            echo "commit_sha=" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          git commit -m "chore: sync supported agents manifest"
+          COMMIT_SHA="$(git rev-parse HEAD)"
+          git push origin "HEAD:${{ github.ref_name }}"
+          echo "commit_sha=${COMMIT_SHA}" >> "${GITHUB_OUTPUT}"
+          echo "commit_url=${{ github.server_url }}/${{ github.repository }}/commit/${COMMIT_SHA}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create pull request
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'pr'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: sync supported agents manifest"
+          branch: "automation/supported-agents-sync"
+          delete-branch: true
+          title: "chore: sync supported agents manifest"
+          body: |
+            This PR was generated automatically from the upstream Supported Agents table:
+            - Source: https://github.com/vercel-labs/skills?tab=readme-ov-file#supported-agents
+            - Added: ${{ steps.summary.outputs.added }}
+            - Removed: ${{ steps.summary.outputs.removed }}
+            - Updated: ${{ steps.summary.outputs.updated }}
+
+            The workflow updated `manifests/agents.json` and refreshed README retrieval dates.
+            If `AUTO_BUMP_NPM_VERSION=true`, the package version was also patch-bumped in this branch.
+          labels: |
+            automation
+            agents-sync
+
+      - name: Publish package in direct mode
+        if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode == 'direct' && steps.direct_push.outputs.commit_sha != '' && vars.AUTO_PUBLISH_NPM == 'true' && secrets.NPM_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "@wang121ye/skillmanager@${VERSION}" version >/dev/null 2>&1; then
+            echo "Version ${VERSION} already exists on npm; skip publish."
+          else
+            npm publish --access public
+          fi
+
+      - name: Setup Python for Feishu notification
+        if: steps.summary.outputs.changed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pywayne for Feishu notification
+        if: steps.summary.outputs.changed == 'true'
+        continue-on-error: true
+        run: pip install pywayne
+
+      - name: Send Feishu notification
+        if: steps.summary.outputs.changed == 'true'
+        env:
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LARK_USER_OPEN_ID: ${{ secrets.LARK_USER_OPEN_ID }}
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+          LARK_CHAT_ID: ${{ secrets.LARK_CHAT_ID }}
+        run: |
+          python3 scripts/send_lark_notification.py \
+            --summary-json .tmp/agents-sync-summary.json \
+            --repo "${{ github.repository }}" \
+            --mode "${{ steps.mode.outputs.mode }}" \
+            --pr-url "${{ steps.cpr.outputs.pull-request-url }}" \
+            --commit-url "${{ steps.direct_push.outputs.commit_url }}" \
+            --run-url "${GITHUB_RUN_URL}" \
+            --title "skillmanager upstream agent sync"

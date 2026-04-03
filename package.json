@@ -36,7 +36,9 @@
     "node": ">=20.6.0"
   },
   "scripts": {
-    "test": "node -e \"console.log('no tests yet')\""
+    "test": "node -e \"console.log('no tests yet')\"",
+    "agents:check": "node scripts/sync-supported-agents.js --check",
+    "agents:sync": "node scripts/sync-supported-agents.js --write"
   },
   "dependencies": {
     "commander": "^13.1.0",
