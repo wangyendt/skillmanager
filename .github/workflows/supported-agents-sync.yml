@@ -70,6 +70,15 @@ jobs:
             echo "use_pat=false" >> "${GITHUB_OUTPUT}"
           fi
 
+      - name: Cache summary payload
+        id: summary_payload
+        run: |
+          {
+            echo 'summary_json<<EOF'
+            cat .tmp/agents-sync-summary.json
+            echo 'EOF'
+          } >> "${GITHUB_OUTPUT}"
+
       - name: Bump npm patch version
         if: steps.summary.outputs.changed == 'true' && steps.mode.outputs.mode != 'notify' && vars.AUTO_BUMP_NPM_VERSION == 'true'
         run: npm version patch --no-git-tag-version
@@ -172,6 +181,10 @@ jobs:
           LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
           LARK_CHAT_ID: ${{ secrets.LARK_CHAT_ID }}
         run: |
+          mkdir -p .tmp
+          cat > .tmp/agents-sync-summary.json <<'EOF'
+          ${{ steps.summary_payload.outputs.summary_json }}
+          EOF
           python3 scripts/send_lark_notification.py \
             --summary-json .tmp/agents-sync-summary.json \
             --repo "${{ github.repository }}" \
