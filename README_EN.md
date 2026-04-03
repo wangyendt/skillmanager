@@ -333,7 +333,7 @@ Built-in `manifests/agents.json` is compiled based on:
 - Repository: `vercel-labs/skills`
 - Section: `Supported Agents`
 - License: MIT
-- Retrieved at: 2026-03-13
+- Retrieved at: 2026-04-03
 
 Maintenance rule:
 

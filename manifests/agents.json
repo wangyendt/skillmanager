@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-03-13"
+    "retrievedAt": "2026-04-03"
   },
   "agents": [
     {
@@ -34,7 +34,7 @@
     {
       "id": "antigravity",
       "name": "Antigravity",
-      "projectPath": ".agent/skills",
+      "projectPath": ".agents/skills",
       "globalPath": "~/.gemini/antigravity/skills"
     },
     {
@@ -42,6 +42,12 @@
       "name": "Augment",
       "projectPath": ".augment/skills",
       "globalPath": "~/.augment/skills"
+    },
+    {
+      "id": "bob",
+      "name": "IBM Bob",
+      "projectPath": ".bob/skills",
+      "globalPath": "~/.bob/skills"
     },
     {
       "id": "claude-code",
@@ -58,6 +64,12 @@
     {
       "id": "cline",
       "name": "Cline",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
+      "id": "warp",
+      "name": "Warp",
       "projectPath": ".agents/skills",
       "globalPath": "~/.agents/skills"
     },
@@ -104,10 +116,22 @@
       "globalPath": "~/.cursor/skills"
     },
     {
+      "id": "deepagents",
+      "name": "Deep Agents",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.deepagents/agent/skills"
+    },
+    {
       "id": "droid",
       "name": "Droid",
       "projectPath": ".factory/skills",
       "globalPath": "~/.factory/skills"
+    },
+    {
+      "id": "firebender",
+      "name": "Firebender",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.firebender/skills"
     },
     {
       "id": "gemini-cli",
