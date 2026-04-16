@@ -3,6 +3,18 @@ const fsp = require('fs/promises');
 const fs = require('fs');
 const matter = require('gray-matter');
 
+async function readInstalledSkillMeta(skillMd) {
+  let name = '';
+  let description = '';
+  try {
+    const raw = await fsp.readFile(skillMd, 'utf8');
+    const parsed = matter(raw);
+    if (parsed?.data?.name) name = String(parsed.data.name).trim();
+    if (parsed?.data?.description) description = String(parsed.data.description).trim();
+  } catch {}
+  return { name, description };
+}
+
 async function listInstalledSkills(targetDir) {
   try {
     const entries = await fsp.readdir(targetDir, { withFileTypes: true });
@@ -12,15 +24,10 @@ async function listInstalledSkills(targetDir) {
       const skillDir = path.join(targetDir, e.name);
       const skillMd = path.join(skillDir, 'SKILL.md');
       if (!fs.existsSync(skillMd)) continue;
-      let description = '';
-      try {
-        const raw = await fsp.readFile(skillMd, 'utf8');
-        const parsed = matter(raw);
-        if (parsed?.data?.description) description = String(parsed.data.description).trim();
-      } catch {}
+      const meta = await readInstalledSkillMeta(skillMd);
       skills.push({
-        name: e.name,
-        description,
+        name: meta.name || e.name,
+        description: meta.description,
         skillDir
       });
     }
