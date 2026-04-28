@@ -4,9 +4,15 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-04-03"
+    "retrievedAt": "2026-04-28"
   },
   "agents": [
+    {
+      "id": "aider-desk",
+      "name": "AiderDesk",
+      "projectPath": ".aider-desk/skills",
+      "globalPath": "~/.aider-desk/skills"
+    },
     {
       "id": "amp",
       "name": "Amp",
@@ -68,16 +74,40 @@
       "globalPath": "~/.agents/skills"
     },
     {
+      "id": "dexto",
+      "name": "Dexto",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
       "id": "warp",
       "name": "Warp",
       "projectPath": ".agents/skills",
       "globalPath": "~/.agents/skills"
     },
     {
+      "id": "codearts-agent",
+      "name": "CodeArts Agent",
+      "projectPath": ".codeartsdoer/skills",
+      "globalPath": "~/.codeartsdoer/skills"
+    },
+    {
       "id": "codebuddy",
       "name": "CodeBuddy",
       "projectPath": ".codebuddy/skills",
       "globalPath": "~/.codebuddy/skills"
+    },
+    {
+      "id": "codemaker",
+      "name": "Codemaker",
+      "projectPath": ".codemaker/skills",
+      "globalPath": "~/.codemaker/skills"
+    },
+    {
+      "id": "codestudio",
+      "name": "Code Studio",
+      "projectPath": ".codestudio/skills",
+      "globalPath": "~/.codestudio/skills"
     },
     {
       "id": "codex",
@@ -122,6 +152,12 @@
       "globalPath": "~/.deepagents/agent/skills"
     },
     {
+      "id": "devin",
+      "name": "Devin for Terminal",
+      "projectPath": ".devin/skills",
+      "globalPath": "~/.config/devin/skills"
+    },
+    {
       "id": "droid",
       "name": "Droid",
       "projectPath": ".factory/skills",
@@ -132,6 +168,12 @@
       "name": "Firebender",
       "projectPath": ".agents/skills",
       "globalPath": "~/.firebender/skills"
+    },
+    {
+      "id": "forgecode",
+      "name": "ForgeCode",
+      "projectPath": ".forge/skills",
+      "globalPath": "~/.forge/skills"
     },
     {
       "id": "gemini-cli",
@@ -230,10 +272,22 @@
       "globalPath": "~/.qwen/skills"
     },
     {
+      "id": "rovodev",
+      "name": "Rovo Dev",
+      "projectPath": ".rovodev/skills",
+      "globalPath": "~/.rovodev/skills"
+    },
+    {
       "id": "roo",
       "name": "Roo Code",
       "projectPath": ".roo/skills",
       "globalPath": "~/.roo/skills"
+    },
+    {
+      "id": "tabnine-cli",
+      "name": "Tabnine CLI",
+      "projectPath": ".tabnine/agent/skills",
+      "globalPath": "~/.tabnine/agent/skills"
     },
     {
       "id": "trae",
