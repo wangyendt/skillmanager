@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-04-28"
+    "retrievedAt": "2026-05-05"
   },
   "agents": [
     {
@@ -192,6 +192,12 @@
       "name": "Goose",
       "projectPath": ".goose/skills",
       "globalPath": "~/.config/goose/skills"
+    },
+    {
+      "id": "hermes-agent",
+      "name": "Hermes Agent",
+      "projectPath": ".hermes/skills",
+      "globalPath": "~/.hermes/skills"
     },
     {
       "id": "junie",
