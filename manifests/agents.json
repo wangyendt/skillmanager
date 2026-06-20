@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-05-05"
+    "retrievedAt": "2026-06-20"
   },
   "agents": [
     {
@@ -16,12 +16,6 @@
     {
       "id": "amp",
       "name": "Amp",
-      "projectPath": ".agents/skills",
-      "globalPath": "~/.config/agents/skills"
-    },
-    {
-      "id": "kimi-cli",
-      "name": "Kimi Code CLI",
       "projectPath": ".agents/skills",
       "globalPath": "~/.config/agents/skills"
     },
@@ -42,6 +36,24 @@
       "name": "Antigravity",
       "projectPath": ".agents/skills",
       "globalPath": "~/.gemini/antigravity/skills"
+    },
+    {
+      "id": "antigravity-cli",
+      "name": "Antigravity CLI",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.gemini/antigravity-cli/skills"
+    },
+    {
+      "id": "astrbot",
+      "name": "AstrBot",
+      "projectPath": "data/skills",
+      "globalPath": "~/.astrbot/data/skills"
+    },
+    {
+      "id": "autohand-code",
+      "name": "Autohand Code CLI",
+      "projectPath": ".autohand/skills",
+      "globalPath": "~/.autohand/skills"
     },
     {
       "id": "augment",
@@ -80,8 +92,26 @@
       "globalPath": "~/.agents/skills"
     },
     {
+      "id": "kimi-code-cli",
+      "name": "Kimi Code CLI",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
+      "id": "loaf",
+      "name": "Loaf",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
       "id": "warp",
       "name": "Warp",
+      "projectPath": ".agents/skills",
+      "globalPath": "~/.agents/skills"
+    },
+    {
+      "id": "zed",
+      "name": "Zed",
       "projectPath": ".agents/skills",
       "globalPath": "~/.agents/skills"
     },
@@ -164,6 +194,12 @@
       "globalPath": "~/.factory/skills"
     },
     {
+      "id": "eve",
+      "name": "Eve",
+      "projectPath": "agent/skills",
+      "globalPath": null
+    },
+    {
       "id": "firebender",
       "name": "Firebender",
       "projectPath": ".agents/skills",
@@ -200,6 +236,18 @@
       "globalPath": "~/.hermes/skills"
     },
     {
+      "id": "inference-sh",
+      "name": "inference.sh",
+      "projectPath": ".inferencesh/skills",
+      "globalPath": "~/.inferencesh/skills"
+    },
+    {
+      "id": "jazz",
+      "name": "Jazz",
+      "projectPath": ".jazz/skills",
+      "globalPath": "~/.jazz/skills"
+    },
+    {
       "id": "junie",
       "name": "Junie",
       "projectPath": ".junie/skills",
@@ -230,6 +278,12 @@
       "globalPath": "~/.kode/skills"
     },
     {
+      "id": "lingma",
+      "name": "Lingma",
+      "projectPath": ".lingma/skills",
+      "globalPath": "~/.lingma/skills"
+    },
+    {
       "id": "mcpjam",
       "name": "MCPJam",
       "projectPath": ".mcpjam/skills",
@@ -240,6 +294,12 @@
       "name": "Mistral Vibe",
       "projectPath": ".vibe/skills",
       "globalPath": "~/.vibe/skills"
+    },
+    {
+      "id": "moxby",
+      "name": "Moxby",
+      "projectPath": ".moxby/skills",
+      "globalPath": "~/.moxby/skills"
     },
     {
       "id": "mux",
@@ -260,6 +320,12 @@
       "globalPath": "~/.openhands/skills"
     },
     {
+      "id": "ona",
+      "name": "Ona",
+      "projectPath": ".ona/skills",
+      "globalPath": "~/.ona/skills"
+    },
+    {
       "id": "pi",
       "name": "Pi",
       "projectPath": ".pi/skills",
@@ -272,10 +338,22 @@
       "globalPath": "~/.qoder/skills"
     },
     {
+      "id": "qoder-cn",
+      "name": "Qoder CN",
+      "projectPath": ".qoder/skills",
+      "globalPath": "~/.qoder-cn/skills"
+    },
+    {
       "id": "qwen-code",
       "name": "Qwen Code",
       "projectPath": ".qwen/skills",
       "globalPath": "~/.qwen/skills"
+    },
+    {
+      "id": "reasonix",
+      "name": "Reasonix",
+      "projectPath": ".reasonix/skills",
+      "globalPath": "~/.reasonix/skills"
     },
     {
       "id": "rovodev",
@@ -294,6 +372,18 @@
       "name": "Tabnine CLI",
       "projectPath": ".tabnine/agent/skills",
       "globalPath": "~/.tabnine/agent/skills"
+    },
+    {
+      "id": "terramind",
+      "name": "Terramind",
+      "projectPath": ".terramind/skills",
+      "globalPath": "~/.terramind/skills"
+    },
+    {
+      "id": "tinycloud",
+      "name": "Tinycloud",
+      "projectPath": ".tinycloud/skills",
+      "globalPath": "~/.tinycloud/skills"
     },
     {
       "id": "trae",
@@ -320,6 +410,12 @@
       "globalPath": "~/.zencoder/skills"
     },
     {
+      "id": "zenflow",
+      "name": "Zenflow",
+      "projectPath": ".zencoder/skills",
+      "globalPath": "~/.zencoder/skills"
+    },
+    {
       "id": "neovate",
       "name": "Neovate",
       "projectPath": ".neovate/skills",
@@ -330,6 +426,12 @@
       "name": "Pochi",
       "projectPath": ".pochi/skills",
       "globalPath": "~/.pochi/skills"
+    },
+    {
+      "id": "promptscript",
+      "name": "PromptScript",
+      "projectPath": ".agents/skills",
+      "globalPath": null
     },
     {
       "id": "adal",
