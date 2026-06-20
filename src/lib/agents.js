@@ -86,7 +86,7 @@ function buildAgentSelectionItems(agents) {
     sourceId: 'supported-agents',
     sourceName: 'Supported Agents',
     name: a.name,
-    description: `project: ${a.projectPath} | global: ${a.globalPath}`
+    description: `project: ${a.projectPath || 'N/A'} | global: ${a.globalPath || 'N/A'}`
   }));
 }
 

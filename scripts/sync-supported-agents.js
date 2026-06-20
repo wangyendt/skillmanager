@@ -106,6 +106,18 @@ function normalizePathValue(value) {
   return cleaned === '~' ? '~' : cleaned;
 }
 
+// 上游表格可能用 "N/A (project-only)"、"N/A"、"-" 等标记表示某个 scope 不适用。
+function isNotApplicablePath(value) {
+  const cleaned = stripBackticks(value).trim();
+  return cleaned === '' || cleaned === '-' || cleaned === '—' || /^N\/?A\b/i.test(cleaned);
+}
+
+// 返回规范化路径；若该单元格表示「不适用」，返回 null。
+function parsePathCell(value) {
+  if (isNotApplicablePath(value)) return null;
+  return normalizePathValue(value);
+}
+
 function splitCsvCell(value) {
   return String(value || '')
     .split(',')
@@ -166,8 +178,8 @@ function parseSupportedAgentsTable(markdown) {
 
     const names = splitCsvCell(cols[0]);
     const ids = splitCsvCell(cols[1]);
-    const projectPath = normalizePathValue(cols[2]);
-    const globalPath = normalizePathValue(cols[3]);
+    const projectPath = parsePathCell(cols[2]);
+    const globalPath = parsePathCell(cols[3]);
 
     if (!names.length || !ids.length) {
       throw new Error(`表格行无法解析名称或 agent id: ${line}`);
@@ -175,8 +187,8 @@ function parseSupportedAgentsTable(markdown) {
     if (names.length !== ids.length) {
       throw new Error(`名称数与 agent id 数不一致: ${line}`);
     }
-    if (!projectPath || !globalPath) {
-      throw new Error(`Project/Global 路径不能为空: ${line}`);
+    if (!projectPath && !globalPath) {
+      throw new Error(`Project/Global 路径不能同时为空: ${line}`);
     }
 
     for (let i = 0; i < ids.length; i += 1) {
@@ -246,8 +258,15 @@ function validateAgents(nextAgents, currentAgents) {
       throw new Error(`agent name 不能为空：${normalized.id}`);
     }
 
-    validatePathShape(`projectPath(${normalized.id})`, normalized.projectPath);
-    validatePathShape(`globalPath(${normalized.id})`, normalized.globalPath, { allowTilde: true });
+    if (!normalized.projectPath && !normalized.globalPath) {
+      throw new Error(`agent 至少需要一个有效路径：${normalized.id}`);
+    }
+    if (normalized.projectPath) {
+      validatePathShape(`projectPath(${normalized.id})`, normalized.projectPath);
+    }
+    if (normalized.globalPath) {
+      validatePathShape(`globalPath(${normalized.id})`, normalized.globalPath, { allowTilde: true });
+    }
   }
 
   if (Array.isArray(currentAgents) && currentAgents.length > 0) {
