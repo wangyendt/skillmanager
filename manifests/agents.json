@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-06-20"
+    "retrievedAt": "2026-07-11"
   },
   "agents": [
     {
@@ -402,6 +402,12 @@
       "name": "Windsurf",
       "projectPath": ".windsurf/skills",
       "globalPath": "~/.codeium/windsurf/skills"
+    },
+    {
+      "id": "zcode",
+      "name": "ZCode",
+      "projectPath": ".zcode/skills",
+      "globalPath": "~/.zcode/skills"
     },
     {
       "id": "zencoder",
