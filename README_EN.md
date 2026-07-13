@@ -89,6 +89,23 @@ npm i -g @wang121ye/skillmanager
 skillmanager install
 ```
 
+During a global install or upgrade, the npm `postinstall` hook performs an additive configuration migration:
+
+- Adds and enables this repository in the user's `sources.json`.
+- Appends `skillmanager:skills/skillmanager` to every existing profile's `selectedSkillIds`.
+- Preserves all other sources, selected skills, agent selections, and unknown custom fields instead of replacing whole files with defaults.
+- If lifecycle scripts are disabled or configuration is temporarily unwritable, the first CLI run retries safely. Malformed JSON is reported and left untouched.
+
+### Bundled skillmanager skill
+
+This repository includes [`skills/skillmanager/SKILL.md`](./skills/skillmanager/SKILL.md). It guides agents through safe skill installation, updates, removal, source and profile management, and `AGENTS.md` synchronization while preserving the user's unrelated sources and selections.
+
+After a global npm install or upgrade, this skill is automatically registered as a source and selected in existing profiles. The npm install itself does not copy the skill into every agent directory. Run the following command and confirm the interactive selections to install it into the selected global agent directories:
+
+```bash
+skillmanager install --global
+```
+
 ### Direct via npx (no install)
 
 ```bash

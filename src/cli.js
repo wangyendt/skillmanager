@@ -10,8 +10,18 @@ const { uninstall } = require('./commands/uninstall');
 const { webui } = require('./commands/webui');
 const { listSources, addSource, removeSource, setEnabled } = require('./commands/source');
 const { showConfig, setDefaultProfileCmd, setRemoteProfileUrlCmd, pushProfileCmd, pullProfileCmd } = require('./commands/config');
+const { ensureSelfRegistration } = require('./lib/self-register');
 
 async function main() {
+  try {
+    await ensureSelfRegistration();
+  } catch (err) {
+    // npm lifecycle scripts may be disabled. Retry on CLI startup, but never
+    // overwrite malformed local JSON or block unrelated commands.
+    console.warn('警告：未能自动补充 skillmanager 内置来源；现有配置未被覆盖。');
+    console.warn(err?.message || String(err));
+  }
+
   const program = new Command();
 
   program

@@ -1,6 +1,6 @@
 {
   "name": "@wang121ye/skillmanager",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Cross-platform agent skill manager (bootstrap + optional Web UI selection) built on top of openskills.",
   "keywords": [
     "skillmanager",
@@ -30,13 +30,15 @@
   "main": "src/index.js",
   "files": [
     "src/",
-    "manifests/"
+    "manifests/",
+    "skills/"
   ],
   "engines": {
     "node": ">=20.6.0"
   },
   "scripts": {
-    "test": "node -e \"console.log('no tests yet')\"",
+    "postinstall": "node src/postinstall.js",
+    "test": "node --test",
     "agents:check": "node scripts/sync-supported-agents.js --check",
     "agents:sync": "node scripts/sync-supported-agents.js --write"
   },

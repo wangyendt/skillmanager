@@ -1,6 +1,14 @@
 {
-  "version": 2,
+  "version": 3,
   "sources": [
+    {
+      "id": "skillmanager",
+      "name": "Skillmanager",
+      "kind": "git",
+      "enabled": true,
+      "repo": "https://github.com/wangyendt/skillmanager.git",
+      "openskillsRef": "wangyendt/skillmanager"
+    },
     {
       "id": "anthropic",
       "name": "Anthropic Official Skills",
@@ -35,4 +43,3 @@
     }
   ]
 }
-

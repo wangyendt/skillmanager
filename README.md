@@ -93,6 +93,23 @@ npm i -g @wang121ye/skillmanager
 skillmanager install
 ```
 
+全局安装或升级时，npm 的 `postinstall` 会以增量方式完成一次配置迁移：
+
+- 在用户 `sources.json` 中添加并启用本仓库来源。
+- 在所有已有 profile 的 `selectedSkillIds` 末尾补充 `skillmanager:skills/skillmanager`。
+- 保留其他来源、其他已选 skills、agent 选择和未知自定义字段，不会用默认配置覆盖整个文件。
+- 如果安装脚本被禁用或配置暂时不可写，第一次运行 CLI 时会安全重试；遇到格式损坏的 JSON 会保留原文件并给出警告。
+
+### 内置 skillmanager skill
+
+本仓库自带 [`skills/skillmanager/SKILL.md`](./skills/skillmanager/SKILL.md)，用于指导 Agent 安全地执行 skills 的安装、更新、卸载、来源管理、profile 管理和 `AGENTS.md` 同步，并强调保留用户已有的其他来源与选择。
+
+全局安装或升级 npm 包后，这个 skill 会被自动加入来源并在已有 profile 中勾选。npm 安装本身不会直接把 skill 复制到每个 Agent 的目录；执行下面的命令并确认交互选择后，才会安装到选中的全局 Agent 目录：
+
+```bash
+skillmanager install --global
+```
+
 ### 直接 npx（无需安装）
 
 ```bash
