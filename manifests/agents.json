@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-07-11"
+    "retrievedAt": "2026-07-21"
   },
   "agents": [
     {
@@ -230,6 +230,12 @@
       "globalPath": "~/.config/goose/skills"
     },
     {
+      "id": "grok",
+      "name": "Grok Build",
+      "projectPath": ".grok/skills",
+      "globalPath": "~/.grok/skills"
+    },
+    {
       "id": "hermes-agent",
       "name": "Hermes Agent",
       "projectPath": ".hermes/skills",
@@ -264,6 +270,12 @@
       "name": "Kilo Code",
       "projectPath": ".kilocode/skills",
       "globalPath": "~/.kilocode/skills"
+    },
+    {
+      "id": "kimchi",
+      "name": "Kimchi",
+      "projectPath": ".kimchi/skills",
+      "globalPath": "~/.config/kimchi/harness/skills"
     },
     {
       "id": "kiro-cli",
