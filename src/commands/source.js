@@ -1,4 +1,11 @@
-const { readUserSourcesManifest, writeUserSourcesManifest, loadSourcesManifest, getUserManifestPath } = require('../lib/manifest');
+const {
+  getRemovedSourceIds,
+  readBuiltinSourcesManifest,
+  readUserSourcesManifest,
+  writeUserSourcesManifest,
+  loadSourcesManifest,
+  getUserManifestPath
+} = require('../lib/manifest');
 const { upsertUserSourceFromInput } = require('../lib/source-manage');
 
 async function listSources() {
@@ -16,7 +23,7 @@ async function listSources() {
 }
 
 async function addSource(repoOrRef, opts) {
-  const { added, source: newSource, userPath } = await upsertUserSourceFromInput(repoOrRef, {
+  const { added, restored, source: newSource, userPath } = await upsertUserSourceFromInput(repoOrRef, {
     id: opts?.id,
     name: opts?.name,
     ref: opts?.ref,
@@ -24,7 +31,9 @@ async function addSource(repoOrRef, opts) {
   });
 
   // eslint-disable-next-line no-console
-  console.log(added ? `已添加来源：${newSource.id}` : `来源已存在：${newSource.id}`);
+  console.log(
+    restored ? `已恢复来源：${newSource.id}` : added ? `已添加来源：${newSource.id}` : `来源已存在：${newSource.id}`
+  );
   // eslint-disable-next-line no-console
   console.log(`写入：${userPath}`);
   // eslint-disable-next-line no-console
@@ -35,14 +44,27 @@ async function addSource(repoOrRef, opts) {
 
 async function removeSource(id) {
   const { manifest, sources, userPath } = await readUserSourcesManifest();
-  const before = sources.length;
   const nextSources = sources.filter((s) => s && s.id !== id);
-  if (nextSources.length === before) {
+  const removedSourceIds = getRemovedSourceIds(manifest);
+  const alreadyRemoved = removedSourceIds.has(id);
+
+  if (nextSources.length === sources.length && !alreadyRemoved) {
+    const { sources: builtinSources } = await readBuiltinSourcesManifest();
+    if (!builtinSources.some((source) => source?.id === id)) {
+      // eslint-disable-next-line no-console
+      console.log(`未找到来源：${id}`);
+      return;
+    }
+  }
+
+  removedSourceIds.add(id);
+
+  if (nextSources.length === sources.length && alreadyRemoved) {
     // eslint-disable-next-line no-console
-    console.log(`未找到来源：${id}`);
+    console.log(`来源已经移除：${id}`);
     return;
   }
-  const next = { ...(manifest || {}), sources: nextSources };
+  const next = { ...(manifest || {}), sources: nextSources, removedSourceIds: [...removedSourceIds] };
   await writeUserSourcesManifest(next);
   // eslint-disable-next-line no-console
   console.log(`已移除来源：${id}`);

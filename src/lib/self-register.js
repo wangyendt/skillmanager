@@ -3,6 +3,7 @@ const fsp = require('fs/promises');
 const { randomUUID } = require('crypto');
 
 const { getAppPaths } = require('./paths');
+const { getRemovedSourceIds } = require('./manifest');
 const builtinSourcesManifest = require('../../manifests/sources.json');
 const packageJson = require('../../package.json');
 
@@ -66,6 +67,15 @@ function prepareSourcesManifest(manifest) {
   }
 
   const selfSource = getBuiltinSelfSource();
+  const removedSourceIds = getRemovedSourceIds(manifest);
+  if (removedSourceIds.has(SELF_SOURCE_ID)) {
+    return {
+      ...manifest,
+      version: Math.max(Number(manifest.version || 1), Number(builtinSourcesManifest.version || 1)),
+      sources: manifest.sources.filter((source) => !isObject(source) || source.id !== SELF_SOURCE_ID)
+    };
+  }
+
   let found = false;
   const sources = manifest.sources.map((source) => {
     if (!isObject(source) || source.id !== SELF_SOURCE_ID) return source;
@@ -106,7 +116,8 @@ async function readProfiles(profilesDir) {
   return profiles;
 }
 
-function prepareProfile(profile) {
+function prepareProfile(profile, options = {}) {
+  if (options.registerSelf === false) return profile;
   const selectedSkillIds = Array.isArray(profile.selectedSkillIds) ? profile.selectedSkillIds : [];
   if (selectedSkillIds.includes(SELF_SKILL_ID)) return profile;
   return { ...profile, selectedSkillIds: [...selectedSkillIds, SELF_SKILL_ID] };
@@ -157,7 +168,12 @@ async function ensureSelfRegistration(options = {}) {
   const sourcesManifest = await readJsonFile(sourcesPath, builtinSourcesManifest);
   const profiles = await readProfiles(profilesDir);
   const nextSourcesManifest = prepareSourcesManifest(sourcesManifest);
-  const nextProfiles = profiles.map(({ filePath, profile }) => ({ filePath, profile, next: prepareProfile(profile) }));
+  const registerSelf = !getRemovedSourceIds(nextSourcesManifest).has(SELF_SOURCE_ID);
+  const nextProfiles = profiles.map(({ filePath, profile }) => ({
+    filePath,
+    profile,
+    next: prepareProfile(profile, { registerSelf })
+  }));
   const nextConfig = prepareConfig(config, packageVersion);
 
   const sourcesChanged = !sourcesExists || !sameJson(sourcesManifest, nextSourcesManifest);
@@ -174,6 +190,7 @@ async function ensureSelfRegistration(options = {}) {
     skipped: false,
     sourcesChanged,
     profilesChanged: changedProfiles.length,
+    selfSourceRemoved: !registerSelf,
     sourcesPath,
     configPath
   };

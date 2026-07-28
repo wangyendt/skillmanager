@@ -1,4 +1,9 @@
-const { readUserSourcesManifest, writeUserSourcesManifest } = require('./manifest');
+const {
+  getRemovedSourceIds,
+  readBuiltinSourcesManifest,
+  readUserSourcesManifest,
+  writeUserSourcesManifest
+} = require('./manifest');
 const { defaultSourceIdFromInput, parseGitHubRef } = require('./source-utils');
 
 function uniqueId(desired, existingIds) {
@@ -22,31 +27,72 @@ function normalizeRef(ref) {
   return String(ref || '').trim().toLowerCase();
 }
 
+function sourceMatchesInput(source, repoOrRef, gh) {
+  if (!source) return false;
+  if (gh?.openskillsRef && normalizeRef(source.openskillsRef) === normalizeRef(gh.openskillsRef)) return true;
+  if (gh?.httpsRepo && normalizeRepo(source.repo) === normalizeRepo(gh.httpsRepo)) return true;
+  return normalizeRepo(source.repo) === normalizeRepo(repoOrRef);
+}
+
 async function upsertUserSourceFromInput(repoOrRef, opts = {}) {
   const { manifest, sources, userPath } = await readUserSourcesManifest();
   const gh = parseGitHubRef(repoOrRef);
+  const removedSourceIds = getRemovedSourceIds(manifest);
 
   const existing = sources.find((s) => {
     if (!s) return false;
     if (opts?.id && s.id === String(opts.id)) return true;
-    if (gh?.openskillsRef && normalizeRef(s.openskillsRef) === normalizeRef(gh.openskillsRef)) return true;
-    if (gh?.httpsRepo && normalizeRepo(s.repo) === normalizeRepo(gh.httpsRepo)) return true;
-    return normalizeRepo(s.repo) === normalizeRepo(repoOrRef);
+    return sourceMatchesInput(s, repoOrRef, gh);
   });
 
   if (existing) {
-    if (opts?.enableIfExists && existing.enabled === false) {
-      const nextSources = sources.map((s) => (s && s.id === existing.id ? { ...s, enabled: true } : s));
-      const next = { ...(manifest || {}), version: Number(manifest?.version || 1), sources: nextSources };
+    const shouldEnable = opts?.enableIfExists && existing.enabled === false;
+    const clearedTombstone = removedSourceIds.delete(existing.id);
+    if (shouldEnable || clearedTombstone) {
+      const nextSource = shouldEnable ? { ...existing, enabled: true } : existing;
+      const nextSources = sources.map((s) => (s && s.id === existing.id ? nextSource : s));
+      const next = {
+        ...(manifest || {}),
+        version: Number(manifest?.version || 1),
+        sources: nextSources,
+        removedSourceIds: [...removedSourceIds]
+      };
       await writeUserSourcesManifest(next);
-      return { added: false, source: { ...existing, enabled: true }, userPath };
+      return { added: false, restored: clearedTombstone, source: nextSource, userPath };
     }
-    return { added: false, source: existing, userPath };
+    return { added: false, restored: false, source: existing, userPath };
+  }
+
+  const { sources: builtinSources } = await readBuiltinSourcesManifest();
+  const restorableBuiltin = builtinSources.find(
+    (source) =>
+      source?.id &&
+      removedSourceIds.has(source.id) &&
+      (!opts?.id || String(opts.id) === source.id) &&
+      sourceMatchesInput(source, repoOrRef, gh)
+  );
+  if (restorableBuiltin) {
+    const restoredSource = {
+      ...restorableBuiltin,
+      ...(opts?.name ? { name: String(opts.name) } : {}),
+      ...(opts?.ref ? { openskillsRef: String(opts.ref) } : {}),
+      enabled: opts?.enabled === false ? false : true
+    };
+    removedSourceIds.delete(restorableBuiltin.id);
+    const next = {
+      ...(manifest || {}),
+      version: Number(manifest?.version || 1),
+      sources: [...sources, restoredSource],
+      removedSourceIds: [...removedSourceIds]
+    };
+    await writeUserSourcesManifest(next);
+    return { added: true, restored: true, source: restoredSource, userPath };
   }
 
   const existingIds = new Set(sources.map((s) => s && s.id).filter(Boolean));
   const desiredId = opts?.id ? String(opts.id) : defaultSourceIdFromInput(repoOrRef);
   const id = uniqueId(desiredId, existingIds);
+  const restored = removedSourceIds.delete(id);
 
   const newSource = {
     id,
@@ -60,10 +106,11 @@ async function upsertUserSourceFromInput(repoOrRef, opts = {}) {
   const next = {
     ...(manifest || {}),
     version: Number(manifest?.version || 1),
-    sources: [...sources, newSource]
+    sources: [...sources, newSource],
+    removedSourceIds: [...removedSourceIds]
   };
   await writeUserSourcesManifest(next);
-  return { added: true, source: newSource, userPath };
+  return { added: true, restored, source: newSource, userPath };
 }
 
 module.exports = { upsertUserSourceFromInput };

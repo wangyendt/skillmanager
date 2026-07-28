@@ -49,6 +49,7 @@ skillmanager source remove <id>
 ```
 
 Add or update only the requested source. Do not replace the whole `sources.json`, because it may contain unrelated private or custom repositories.
+Built-in sources may be removed; skillmanager preserves that choice in `removedSourceIds`. Adding the same built-in repository again restores its original ID; sources that used a custom ID must be restored with the same `--id`. Disabling a source keeps it configured but excludes it from installation and update workflows.
 
 ### Update or uninstall
 

@@ -268,6 +268,8 @@ skillmanager source remove superpowers
 
 Supports `owner/repo`, GitHub URL, and `git@github.com:owner/repo.git`.
 
+Built-in sources can also be removed. skillmanager records their IDs in `removedSourceIds`, so later loads and upgrades do not restore them automatically. Adding the same built-in repository again restores its original ID and clears its removal record. A source that used a custom ID must be restored with the same `--id`. `source disable` only deactivates a source and keeps it visible in the list.
+
 ## Update Skills
 
 Default behavior updates via profile selection (or all visible skills when no valid profile selection exists):

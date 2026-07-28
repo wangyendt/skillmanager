@@ -322,6 +322,8 @@ skillmanager source remove superpowers
 ```
 
 > `source add` 支持输入 `owner/repo` 或 GitHub URL（也支持 `git@github.com:owner/repo.git`）。
+>
+> 内置来源也可以删除。skillmanager 会把被删除的来源 ID 记录在 `removedSourceIds` 中，后续加载和升级不会自动恢复；再次执行 `source add` 添加同一内置仓库时会恢复原 ID 并清除删除记录。使用自定义 ID 的来源需要通过相同的 `--id` 恢复。`source disable` 只会停用来源，仍会保留在列表中。
 
 ## 更新已安装 skills（无论哪种来源）
 

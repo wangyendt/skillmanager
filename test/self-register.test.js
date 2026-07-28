@@ -111,6 +111,32 @@ test('runtime retry respects choices made after the current version was register
   assert.equal(afterReinstall.sources.find((source) => source.id === 'skillmanager').enabled, true);
 });
 
+test('forced registration respects a tombstoned skillmanager source', async (t) => {
+  const configDir = await makeTempConfigDir(t);
+  const sourcesPath = path.join(configDir, 'sources.json');
+  const profilePath = path.join(configDir, 'profiles', 'default.json');
+
+  await writeJson(sourcesPath, {
+    version: 4,
+    removedSourceIds: ['skillmanager'],
+    sources: [{ id: 'anthropic', enabled: true, repo: 'https://github.com/anthropics/skills.git' }]
+  });
+  await writeJson(profilePath, {
+    version: 2,
+    selectedSkillIds: ['anthropic:skills/example'],
+    selectedAgentIdsByScope: { project: ['codex'], global: [] }
+  });
+
+  const result = await ensureSelfRegistration({ configDir, packageVersion: '9.9.9', force: true });
+  const manifest = await readJson(sourcesPath);
+  const profile = await readJson(profilePath);
+
+  assert.equal(result.selfSourceRemoved, true);
+  assert.ok(!manifest.sources.some((source) => source.id === 'skillmanager'));
+  assert.deepEqual(manifest.removedSourceIds, ['skillmanager']);
+  assert.deepEqual(profile.selectedSkillIds, ['anthropic:skills/example']);
+});
+
 test('malformed profile is never overwritten and prevents a partial migration', async (t) => {
   const configDir = await makeTempConfigDir(t);
   const sourcesPath = path.join(configDir, 'sources.json');

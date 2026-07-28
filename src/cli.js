@@ -162,7 +162,7 @@ async function main() {
 
   source
     .command('remove')
-    .description('删除来源（按 id）。')
+    .description('删除来源（按 id；内置来源会记录移除状态，避免自动恢复）。')
     .argument('<id>', '来源 id')
     .action(async (id) => {
       await removeSource(id);

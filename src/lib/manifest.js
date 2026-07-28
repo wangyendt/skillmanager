@@ -12,6 +12,19 @@ function getUserManifestPath() {
   return path.join(appPaths.configDir, 'sources.json');
 }
 
+function normalizeRemovedSourceIds(manifest) {
+  const value = manifest?.removedSourceIds;
+  if (value == null) return [];
+  if (!Array.isArray(value) || value.some((id) => typeof id !== 'string' || !id.trim())) {
+    throw new Error('sources.json 格式异常：removedSourceIds 必须是非空字符串数组。');
+  }
+  return Array.from(new Set(value.map((id) => id.trim())));
+}
+
+function getRemovedSourceIds(manifest) {
+  return new Set(normalizeRemovedSourceIds(manifest));
+}
+
 async function loadSourcesManifest() {
   const builtinPath = getBuiltinManifestPath();
   const userPath = getUserManifestPath();
@@ -35,30 +48,50 @@ async function loadSourcesManifest() {
 
   // Merge-in new builtin sources by id (non-destructive):
   // - keep user's existing entries as-is (including enabled flags)
+  // - remove entries explicitly tombstoned by the user
   // - add any builtin sources missing from user
   // - bump version to max(builtin, user)
   if (manifestPath === userPath) {
     const userSources = Array.isArray(manifest?.sources) ? manifest.sources : [];
-    const userIds = new Set(userSources.map((s) => s && s.id).filter(Boolean));
+    const normalizedRemovedSourceIds = normalizeRemovedSourceIds(manifest);
+    const removedSourceIds = new Set(normalizedRemovedSourceIds);
+    const retainedUserSources = userSources.filter((s) => !s?.id || !removedSourceIds.has(s.id));
+    const userIds = new Set(retainedUserSources.map((s) => s && s.id).filter(Boolean));
     const builtinSources = Array.isArray(builtin?.sources) ? builtin.sources : [];
 
-    const mergedSources = [...userSources];
+    const mergedSources = [...retainedUserSources];
     for (const s of builtinSources) {
       if (!s?.id) continue;
-      if (!userIds.has(s.id)) mergedSources.push(s);
+      if (!userIds.has(s.id) && !removedSourceIds.has(s.id)) mergedSources.push(s);
     }
 
     const mergedVersion = Math.max(Number(manifest?.version || 1), Number(builtin?.version || 1));
-    const changed = mergedVersion !== Number(manifest?.version || 1) || mergedSources.length !== userSources.length;
+    const removedSourceIdsChanged =
+      Array.isArray(manifest?.removedSourceIds) &&
+      JSON.stringify(normalizedRemovedSourceIds) !== JSON.stringify(manifest.removedSourceIds);
+    const sourcesChanged = JSON.stringify(mergedSources) !== JSON.stringify(userSources);
+    const changed =
+      mergedVersion !== Number(manifest?.version || 1) || sourcesChanged || removedSourceIdsChanged;
 
     if (changed) {
-      manifest = { ...(manifest || {}), version: mergedVersion, sources: mergedSources };
+      manifest = {
+        ...(manifest || {}),
+        version: mergedVersion,
+        sources: mergedSources,
+        ...(manifest?.removedSourceIds != null ? { removedSourceIds: normalizedRemovedSourceIds } : {})
+      };
       await writeJson(userPath, manifest);
     }
   }
 
   const sources = Array.isArray(manifest?.sources) ? manifest.sources : [];
   return { version: manifest?.version ?? 1, sources, manifestPath };
+}
+
+async function readBuiltinSourcesManifest() {
+  const builtin = await readJson(getBuiltinManifestPath());
+  const sources = Array.isArray(builtin?.sources) ? builtin.sources : [];
+  return { manifest: builtin, sources };
 }
 
 async function readUserSourcesManifest() {
@@ -80,5 +113,12 @@ async function writeUserSourcesManifest(manifest) {
   return userPath;
 }
 
-module.exports = { loadSourcesManifest, getUserManifestPath, readUserSourcesManifest, writeUserSourcesManifest };
-
+module.exports = {
+  loadSourcesManifest,
+  getUserManifestPath,
+  getRemovedSourceIds,
+  normalizeRemovedSourceIds,
+  readBuiltinSourcesManifest,
+  readUserSourcesManifest,
+  writeUserSourcesManifest
+};

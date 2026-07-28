@@ -8,7 +8,9 @@ async function main() {
   try {
     const result = await ensureSelfRegistration({ force: true });
     console.log(
-      `[skillmanager] 已确保内置来源启用，并为 ${result.profilesChanged} 个已有 profile 新增勾选 skillmanager。`
+      result.selfSourceRemoved
+        ? '[skillmanager] 已保留用户对 skillmanager 内置来源的移除设置。'
+        : `[skillmanager] 已确保内置来源启用，并为 ${result.profilesChanged} 个已有 profile 新增勾选 skillmanager。`
     );
   } catch (err) {
     // Do not make the CLI unusable because one local config file is malformed or
