@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-07-21"
+    "retrievedAt": "2026-07-31"
   },
   "agents": [
     {
@@ -300,6 +300,12 @@
       "name": "MCPJam",
       "projectPath": ".mcpjam/skills",
       "globalPath": "~/.mcpjam/skills"
+    },
+    {
+      "id": "minimax-code",
+      "name": "MiniMax Code",
+      "projectPath": ".minimax/skills",
+      "globalPath": "~/.minimax/skills"
     },
     {
       "id": "mistral-vibe",
