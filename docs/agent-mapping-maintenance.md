@@ -41,8 +41,8 @@ Automation:
 - If `AUTO_PUBLISH_NPM=true`, also provide GitHub secret `GH_PAT`. The PAT is used for version-bump pushes so GitHub can trigger the downstream `publish-npm.yml` workflow.
 - Normal `main` pushes are also covered: if a push does not already change the package version, `release-on-main.yml` will patch-bump `package.json` and `package-lock.json`, push that commit back to `main` using `GH_PAT`, and let `publish-npm.yml` publish the new version.
 - npm publishing now uses npm trusted publishing (OIDC) from GitHub Actions. Configure the package-level trusted publisher on npm for:
-  - Owner: `wangyendt`
-  - Repository: `skillmanager`
+  - GitHub owner: `wangyendt`
+  - Repository: `skilltruck`
   - Workflow file: `publish-npm.yml`
 - Only `publish-npm.yml` should be configured as the trusted publisher. Other workflows must not call `npm publish` directly.
 - `NPM_TOKEN` is no longer required for publishing after trusted publishing is configured.

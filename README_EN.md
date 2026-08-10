@@ -1,8 +1,10 @@
-# skillmanager (`@wang121ye/skillmanager`)
+# SkillTruck (`skilltruck`)
 
 [中文](./README.md) | [English](./README_EN.md)
 
 A cross-platform (Windows / Linux / macOS) **Agent Skills manager**. It unifies **install / update / uninstall** for official skills, third-party skill repos, and your own repos, with `project/global` scope and multi-agent target directories.
+
+> Ship skills to every agent.
 
 This project is built on top of `openskills` for installation and optional `AGENTS.md` syncing.
 
@@ -10,13 +12,13 @@ This project is built on top of `openskills` for installation and optional `AGEN
 
 ```bash
 # 1) Default install (project scope), interactive skill + agent selection
-skillmanager install
+skilltruck install
 
 # 2) Install globally to agent paths under ~
-skillmanager install --global
+skilltruck install --global
 
 # 3) Use Web UI (left: agents, right: source tabs)
-skillmanager webui
+skilltruck webui
 ```
 
 ## Why It's Useful (vs manual copy)
@@ -32,27 +34,29 @@ skillmanager webui
 
 | Command | What it does | Common example |
 | --- | --- | --- |
-| `skillmanager install [repoOrRef]` | Interactive install with skills + agents; supports single-source install and auto source registration | `skillmanager install --global` |
-| `skillmanager update` | Re-install style update using profile + scope + selected agents | `skillmanager update --profile laptop` |
-| `skillmanager uninstall [skillNames...]` | Remove selected skills (agent selection first) | `skillmanager uninstall xlsx` |
-| `skillmanager webui` | Web UI install mode (search, source tabs, visible-item batch actions) | `skillmanager webui --project` |
-| `skillmanager webui --mode uninstall` | Web UI uninstall mode | `skillmanager webui --mode uninstall --global` |
-| `skillmanager source ...` | Source management: `list/add/remove/enable/disable` | `skillmanager source add owner/repo` |
-| `skillmanager config ...` | Config/profile management: `show/set-default-profile/set-remote-profile-url/push/pull` | `skillmanager config push --profile laptop` |
-| `skillmanager paths` | Print config/cache/repo-cache/manifest paths | `skillmanager paths` |
+| `skilltruck install [repoOrRef]` | Interactive install with skills + agents; supports single-source install and auto source registration | `skilltruck install --global` |
+| `skilltruck update` | Re-install style update using profile + scope + selected agents | `skilltruck update --profile laptop` |
+| `skilltruck uninstall [skillNames...]` | Remove selected skills (agent selection first) | `skilltruck uninstall xlsx` |
+| `skilltruck webui` | Web UI install mode (search, source tabs, visible-item batch actions) | `skilltruck webui --project` |
+| `skilltruck webui --mode uninstall` | Web UI uninstall mode | `skilltruck webui --mode uninstall --global` |
+| `skilltruck source ...` | Source management: `list/add/remove/enable/disable` | `skilltruck source add owner/repo` |
+| `skilltruck config ...` | Config/profile management: `show/set-default-profile/set-remote-profile-url/push/pull` | `skilltruck config push --profile laptop` |
+| `skilltruck paths` | Print config/cache/repo-cache/manifest paths | `skilltruck paths` |
 
 ## Environment Variables
 
 | Variable | Purpose |
 | --- | --- |
-| `SKILLMANAGER_PROFILE` | Temporarily override default profile |
-| `SKILLMANAGER_PROFILE_URL` | Temporarily override remote profile base URL for `config push/pull` |
-| `SKILLMANAGER_CONCURRENCY` | Default scan concurrency (can be overridden by `--concurrency`) |
-| `SKILLMANAGER_AUTO_REFRESH` | Auto-refresh source repo cache switch (`0` disables) |
+| `SKILLTRUCK_PROFILE` | Temporarily override default profile |
+| `SKILLTRUCK_PROFILE_URL` | Temporarily override remote profile base URL for `config push/pull` |
+| `SKILLTRUCK_CONCURRENCY` | Default scan concurrency (can be overridden by `--concurrency`) |
+| `SKILLTRUCK_AUTO_REFRESH` | Auto-refresh source repo cache switch (`0` disables) |
+
+When upgrading from `@wang121ye/skillmanager`, SkillTruck recognizes the former `SKILLMANAGER_*` variables and existing `skillmanager` config directory; new `SKILLTRUCK_*` variables take precedence. Its bundled source, profile selections, and tombstones are migrated additively without replacing unrelated sources or custom fields.
 
 ## Requirements & Compatibility
 
-`skillmanager` uses system `git` to fetch/update source repos and uses `openskills` for installation + sync. If versions are too old, behavior may fail on some machines.
+`skilltruck` uses system `git` to fetch/update source repos and uses `openskills` for installation + sync. If versions are too old, behavior may fail on some machines.
 
 - **Node.js** (for openskills): recommended **>= 20.6.0**
 - **openskills**: recommended **>= 1.5.0**
@@ -64,20 +68,20 @@ Common mitigation:
 - Reduce concurrency for unstable networks:
 
 ```bash
-skillmanager webui --concurrency 1
+skilltruck webui --concurrency 1
 ```
 
 ### Automatic Cache Refresh
 
-When scanning source repos, `skillmanager` checks whether local cache is behind remote:
+When scanning source repos, `skilltruck` checks whether local cache is behind remote:
 
 - By default, stale cache is automatically refreshed.
-- You can force refresh via `--force-refresh`, or disable auto refresh via `SKILLMANAGER_AUTO_REFRESH=0`.
+- You can force refresh via `--force-refresh`, or disable auto refresh via `SKILLTRUCK_AUTO_REFRESH=0`.
 
 ```bash
-skillmanager webui --force-refresh
-skillmanager install --force-refresh
-skillmanager update --force-refresh
+skilltruck webui --force-refresh
+skilltruck install --force-refresh
+skilltruck update --force-refresh
 ```
 
 ## Install & Run
@@ -85,39 +89,41 @@ skillmanager update --force-refresh
 ### Global install (recommended)
 
 ```bash
-npm i -g @wang121ye/skillmanager
-skillmanager install
+npm i -g skilltruck
+skilltruck install
 ```
 
 During a global install or upgrade, the npm `postinstall` hook performs an additive configuration migration:
 
 - Adds and enables this repository in the user's `sources.json`.
-- Appends `skillmanager:skills/skillmanager` to every existing profile's `selectedSkillIds`.
+- Appends `skilltruck:skills/skilltruck` to every existing profile's `selectedSkillIds`.
 - Preserves all other sources, selected skills, agent selections, and unknown custom fields instead of replacing whole files with defaults.
 - If lifecycle scripts are disabled or configuration is temporarily unwritable, the first CLI run retries safely. Malformed JSON is reported and left untouched.
 
-### Bundled skillmanager skill
+### Bundled skilltruck skill
 
-This repository includes [`skills/skillmanager/SKILL.md`](./skills/skillmanager/SKILL.md). It guides agents through safe skill installation, updates, removal, source and profile management, and `AGENTS.md` synchronization while preserving the user's unrelated sources and selections.
+This repository includes [`skills/skilltruck/SKILL.md`](./skills/skilltruck/SKILL.md). It guides agents through safe skill installation, updates, removal, source and profile management, and `AGENTS.md` synchronization while preserving the user's unrelated sources and selections.
 
 After a global npm install or upgrade, this skill is automatically registered as a source and selected in existing profiles. The npm install itself does not copy the skill into every agent directory. Run the following command and confirm the interactive selections to install it into the selected global agent directories:
 
 ```bash
-skillmanager install --global
+skilltruck install --global
 ```
 
 ### Direct via npx (no install)
 
 ```bash
-npx @wang121ye/skillmanager install
+npx skilltruck install
 ```
+
+`skilltruck` is an unscoped npm package, and its package and CLI names are identical.
 
 ## Core Capabilities
 
 ### 1) Interactive install
 
 ```bash
-skillmanager install
+skilltruck install
 ```
 
 Default flow has two selection steps:
@@ -136,9 +142,9 @@ Keyboard shortcuts in terminal selection:
 ### 2) Web UI for install/uninstall
 
 ```bash
-skillmanager webui
-skillmanager webui --project
-skillmanager webui --global
+skilltruck webui
+skilltruck webui --project
+skilltruck webui --global
 ```
 
 Web UI features:
@@ -151,16 +157,16 @@ Web UI features:
 You can also use profiles (skill selection + per-scope agent selection are remembered):
 
 ```bash
-skillmanager webui --profile laptop
-skillmanager install --profile laptop
+skilltruck webui --profile laptop
+skilltruck install --profile laptop
 ```
 
 ### 3) Install from one source directly (and auto-register source)
 
 ```bash
-skillmanager install https://github.com/wangyendt/wayne-skills
+skilltruck install https://github.com/wangyendt/wayne-skills
 # or
-skillmanager install wangyendt/wayne-skills
+skilltruck install wangyendt/wayne-skills
 ```
 
 When `repoOrRef` is passed, source is auto upserted into user `sources.json` (existing one is reused). If the source already exists but is disabled, it will be auto-enabled.
@@ -168,15 +174,15 @@ When `repoOrRef` is passed, source is auto upserted into user `sources.json` (ex
 ## Set a Default Profile (recommended)
 
 ```bash
-skillmanager config set-default-profile laptop
-skillmanager webui
-skillmanager install
+skilltruck config set-default-profile laptop
+skilltruck webui
+skilltruck install
 ```
 
 Or temporarily override by env:
 
 ```bash
-SKILLMANAGER_PROFILE=laptop skillmanager webui
+SKILLTRUCK_PROFILE=laptop skilltruck webui
 ```
 
 ## Config Sync Across Machines
@@ -193,34 +199,34 @@ Security warning: public write access is dangerous. Prefer signed URLs or privat
 ### 1) Set remote base URL once
 
 ```bash
-skillmanager config set-remote-profile-url https://<bucket>.<region>.aliyuncs.com/skillmanager/
+skilltruck config set-remote-profile-url https://<bucket>.<region>.aliyuncs.com/skilltruck/
 ```
 
 Or via env:
 
 ```bash
-export SKILLMANAGER_PROFILE_URL=https://<bucket>.<region>.aliyuncs.com/skillmanager/
+export SKILLTRUCK_PROFILE_URL=https://<bucket>.<region>.aliyuncs.com/skilltruck/
 ```
 
 ### 2) Push config
 
 ```bash
-skillmanager config push
-skillmanager config push --profile laptop
+skilltruck config push
+skilltruck config push --profile laptop
 ```
 
 ### 3) Pull config
 
 ```bash
-skillmanager config pull
-skillmanager config pull --profile laptop
+skilltruck config pull
+skilltruck config pull --profile laptop
 ```
 
 Then install:
 
 ```bash
-skillmanager config pull --profile laptop
-skillmanager install --profile laptop
+skilltruck config pull --profile laptop
+skilltruck install --profile laptop
 ```
 
 ### 4) Scope behavior
@@ -235,8 +241,8 @@ skillmanager install --profile laptop
 No sync by default. Use `--sync` explicitly:
 
 ```bash
-skillmanager install --sync
-skillmanager install --sync --output AGENTS.md
+skilltruck install --sync
+skilltruck install --sync --output AGENTS.md
 ```
 
 `install` / `update` / `uninstall` / `webui` all follow the same explicit sync behavior.
@@ -244,7 +250,7 @@ skillmanager install --sync --output AGENTS.md
 ### 6) Dry run
 
 ```bash
-skillmanager install --dry-run
+skilltruck install --dry-run
 ```
 
 Dry run prints:
@@ -255,48 +261,48 @@ Dry run prints:
 ## Manage Sources
 
 ```bash
-skillmanager source add https://github.com/obra/superpowers
-skillmanager source add ComposioHQ/awesome-claude-skills
-skillmanager source list
+skilltruck source add https://github.com/obra/superpowers
+skilltruck source add ComposioHQ/awesome-claude-skills
+skilltruck source list
 ```
 
 ```bash
-skillmanager source disable superpowers
-skillmanager source enable superpowers
-skillmanager source remove superpowers
+skilltruck source disable superpowers
+skilltruck source enable superpowers
+skilltruck source remove superpowers
 ```
 
 Supports `owner/repo`, GitHub URL, and `git@github.com:owner/repo.git`.
 
-Built-in sources can also be removed. skillmanager records their IDs in `removedSourceIds`, so later loads and upgrades do not restore them automatically. Adding the same built-in repository again restores its original ID and clears its removal record. A source that used a custom ID must be restored with the same `--id`. `source disable` only deactivates a source and keeps it visible in the list.
+Built-in sources can also be removed. skilltruck records their IDs in `removedSourceIds`, so later loads and upgrades do not restore them automatically. Adding the same built-in repository again restores its original ID and clears its removal record. A source that used a custom ID must be restored with the same `--id`. `source disable` only deactivates a source and keeps it visible in the list.
 
 ## Update Skills
 
 Default behavior updates via profile selection (or all visible skills when no valid profile selection exists):
 
 ```bash
-skillmanager update
-skillmanager update --project
-skillmanager update --global
+skilltruck update
+skilltruck update --project
+skilltruck update --global
 ```
 
 Specific profile:
 
 ```bash
-skillmanager update --profile laptop
+skilltruck update --profile laptop
 ```
 
 Adjust selection first with Web UI:
 
 ```bash
-skillmanager webui --profile laptop
-skillmanager update --profile laptop
+skilltruck webui --profile laptop
+skilltruck update --profile laptop
 ```
 
 Use openskills-native update path:
 
 ```bash
-skillmanager update --openskills
+skilltruck update --openskills
 ```
 
 `--openskills` ignores profile skill/agent selection.
@@ -306,27 +312,27 @@ skillmanager update --openskills
 Recommended (Web UI):
 
 ```bash
-skillmanager webui --mode uninstall
+skilltruck webui --mode uninstall
 ```
 
 By name (still asks for agents):
 
 ```bash
-skillmanager uninstall algorithmic-art xlsx
+skilltruck uninstall algorithmic-art xlsx
 ```
 
 By scope:
 
 ```bash
-skillmanager uninstall --project
-skillmanager uninstall --global
-skillmanager uninstall --profile laptop
+skilltruck uninstall --project
+skilltruck uninstall --global
+skilltruck uninstall --profile laptop
 ```
 
 Remove all in target directories (dangerous):
 
 ```bash
-skillmanager uninstall --all
+skilltruck uninstall --all
 ```
 
 `--all` only affects selected agents in the current scope.
@@ -342,7 +348,7 @@ skillmanager uninstall --all
 On first run, built-in `manifests/sources.json` is copied to user config path. You can inspect paths via:
 
 ```bash
-skillmanager paths
+skilltruck paths
 ```
 
 ## Agent Path Mapping Source (Attribution)

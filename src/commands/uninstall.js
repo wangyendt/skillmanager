@@ -29,7 +29,7 @@ async function uninstall(opts, skillNames) {
   let initialAgentIds = normalizeSelectedAgentIds(existing?.selectedAgentIdsByScope?.[scope], agents);
   if (!initialAgentIds.length) initialAgentIds = defaultAgentIds(agents);
   const chosenAgentIds = await promptSkillSelection({
-    title: `skillmanager uninstall · agents · ${scope}`,
+    title: `skilltruck uninstall · agents · ${scope}`,
     skills: buildAgentSelectionItems(agents),
     initialSelectedIds: initialAgentIds
   });
@@ -65,7 +65,7 @@ async function uninstall(opts, skillNames) {
   } else {
     const initialSelected = Array.isArray(skillNames) ? skillNames.filter(Boolean) : [];
     const chosen = await promptSkillSelection({
-      title: `skillmanager uninstall · skills · ${scope}`,
+      title: `skilltruck uninstall · skills · ${scope}`,
       skills: installedGroups.map((s) => ({
         id: s.name,
         sourceId: 'installed',

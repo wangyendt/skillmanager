@@ -39,12 +39,12 @@ async function setRemoteProfileUrl(url) {
 }
 
 function getDefaultProfileFromEnv() {
-  const v = process.env.SKILLMANAGER_PROFILE;
+  const v = process.env.SKILLTRUCK_PROFILE ?? process.env.SKILLMANAGER_PROFILE;
   return v && String(v).trim() ? String(v).trim() : null;
 }
 
 function getRemoteProfileUrlFromEnv() {
-  const v = process.env.SKILLMANAGER_PROFILE_URL;
+  const v = process.env.SKILLTRUCK_PROFILE_URL ?? process.env.SKILLMANAGER_PROFILE_URL;
   return v && String(v).trim() ? String(v).trim() : null;
 }
 
@@ -72,4 +72,3 @@ module.exports = {
   getEffectiveRemoteProfileUrl,
   getUserConfigPath
 };
-

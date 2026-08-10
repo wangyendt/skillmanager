@@ -17,9 +17,10 @@ function isTruthy(value) {
 
 function shouldAutoRefreshCache() {
   // 默认开启自动刷新（发现远端更新时自动重新拉取）
-  // 如需关闭：SKILLMANAGER_AUTO_REFRESH=0
-  if (process.env.SKILLMANAGER_AUTO_REFRESH != null) {
-    return isTruthy(process.env.SKILLMANAGER_AUTO_REFRESH);
+  // 如需关闭：SKILLTRUCK_AUTO_REFRESH=0
+  const configured = process.env.SKILLTRUCK_AUTO_REFRESH ?? process.env.SKILLMANAGER_AUTO_REFRESH;
+  if (configured != null) {
+    return isTruthy(configured);
   }
   return true;
 }
@@ -120,7 +121,7 @@ async function ensureRepo({ reposDir, source, forceRefresh = false, preferCompat
         return await cloneRepo({ git, repoUrl: source.repo, repoDir, cloneArgs });
       }
       // eslint-disable-next-line no-console
-      console.warn(`检测到缓存仓库落后于远端：${source.id}。可使用 --force-refresh 或设置 SKILLMANAGER_AUTO_REFRESH=1。`);
+      console.warn(`检测到缓存仓库落后于远端：${source.id}。可使用 --force-refresh 或设置 SKILLTRUCK_AUTO_REFRESH=1。`);
     }
   } catch {
     // eslint-disable-next-line no-console

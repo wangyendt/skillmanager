@@ -18,7 +18,7 @@ async function setDefaultProfileCmd(name) {
   // eslint-disable-next-line no-console
   console.log(`写入：${configPath}`);
   // eslint-disable-next-line no-console
-  console.log(`你也可以用环境变量临时覆盖：SKILLMANAGER_PROFILE=${config.defaultProfile}`);
+  console.log(`你也可以用环境变量临时覆盖：SKILLTRUCK_PROFILE=${config.defaultProfile}`);
 }
 
 async function setRemoteProfileUrlCmd(url) {
@@ -34,7 +34,7 @@ async function setRemoteProfileUrlCmd(url) {
   // eslint-disable-next-line no-console
   console.log('  - URL 应该是基础路径（以 / 结尾），例如：');
   // eslint-disable-next-line no-console
-  console.log('    https://your-bucket.oss-region.aliyuncs.com/skillmanager/');
+  console.log('    https://your-bucket.oss-region.aliyuncs.com/skilltruck/');
   // eslint-disable-next-line no-console
   console.log('\n⚠️  警告：把远端设置为"公共写"非常危险，建议使用签名 URL 或私有桶。');
 }
@@ -48,7 +48,7 @@ function normalizeUrl(url) {
 async function pushProfileCmd(opts) {
   const profileName = String(opts?.profile || 'default');
   let baseUrl = normalizeUrl(opts?.url) || (await getEffectiveRemoteProfileUrl());
-  if (!baseUrl) throw new Error('缺少 --url，或未设置 config.remoteProfileUrl / SKILLMANAGER_PROFILE_URL');
+  if (!baseUrl) throw new Error('缺少 --url，或未设置 config.remoteProfileUrl / SKILLTRUCK_PROFILE_URL');
 
   // 确保 baseUrl 以 / 结尾
   if (!baseUrl.endsWith('/')) baseUrl += '/';
@@ -103,7 +103,7 @@ async function pushProfileCmd(opts) {
 async function pullProfileCmd(opts) {
   const profileName = String(opts?.profile || 'default');
   let baseUrl = normalizeUrl(opts?.url) || (await getEffectiveRemoteProfileUrl());
-  if (!baseUrl) throw new Error('缺少 --url，或未设置 config.remoteProfileUrl / SKILLMANAGER_PROFILE_URL');
+  if (!baseUrl) throw new Error('缺少 --url，或未设置 config.remoteProfileUrl / SKILLTRUCK_PROFILE_URL');
 
   // 确保 baseUrl 以 / 结尾
   if (!baseUrl.endsWith('/')) baseUrl += '/';

@@ -15,9 +15,11 @@ async function selectUi(opts) {
   const { sources } = await loadSourcesManifest();
   const enabledSources = sources.filter((s) => s && s.enabled !== false);
 
-  const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
+  const concurrency = Number(
+    opts?.concurrency || process.env.SKILLTRUCK_CONCURRENCY || process.env.SKILLMANAGER_CONCURRENCY || 3
+  );
   // eslint-disable-next-line no-console
-  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLMANAGER_CONCURRENCY 调整）`);
+  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLTRUCK_CONCURRENCY 调整）`);
 
   const perSource = await mapWithConcurrency(enabledSources, concurrency, async (s) => {
     try {
@@ -49,7 +51,7 @@ async function selectUi(opts) {
       : allSkills.map((s) => s.id);
 
   const chosen = await launchSelectionUi({
-    title: `skillmanager · profile=${profileName}`,
+    title: `skilltruck · profile=${profileName}`,
     skills: allSkills.map((s) => ({
       id: s.id,
       sourceId: s.sourceId,

@@ -51,9 +51,11 @@ async function update(opts) {
   await ensureDir(paths.reposDir);
   const { sources } = await loadSourcesManifest();
   const enabledSources = sources.filter((s) => s && s.enabled !== false);
-  const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
+  const concurrency = Number(
+    opts?.concurrency || process.env.SKILLTRUCK_CONCURRENCY || process.env.SKILLMANAGER_CONCURRENCY || 3
+  );
   // eslint-disable-next-line no-console
-  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLMANAGER_CONCURRENCY 调整）`);
+  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLTRUCK_CONCURRENCY 调整）`);
 
   const skillsById = new Map();
   const perSource = await mapWithConcurrency(enabledSources, concurrency, async (s) => {
@@ -90,7 +92,7 @@ async function update(opts) {
   let selectedAgentIds = normalizeSelectedAgentIds(existing?.selectedAgentIdsByScope?.[scope], agents);
   if (!selectedAgentIds.length) {
     const chosenAgentIds = await promptSkillSelection({
-      title: `skillmanager update · agents · ${scope}`,
+      title: `skilltruck update · agents · ${scope}`,
       skills: buildAgentSelectionItems(agents),
       initialSelectedIds: defaultAgentIds(agents)
     });

@@ -6,7 +6,7 @@ async function where() {
   const m = await loadSourcesManifest();
 
   // eslint-disable-next-line no-console
-  console.log('skillmanager paths:');
+  console.log('skilltruck paths:');
   // eslint-disable-next-line no-console
   console.log(`- configDir:  ${p.configDir}`);
   // eslint-disable-next-line no-console

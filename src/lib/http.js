@@ -4,6 +4,7 @@ let undiciModule = null;
 
 function getProxyUrlFromEnv() {
   return (
+    process.env.SKILLTRUCK_PROXY ||
     process.env.SKILLMANAGER_PROXY ||
     process.env.HTTPS_PROXY ||
     process.env.https_proxy ||
@@ -61,4 +62,3 @@ async function httpFetch(url, options) {
 }
 
 module.exports = { httpFetch };
-

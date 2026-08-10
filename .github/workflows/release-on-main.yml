@@ -32,6 +32,12 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify package
+        run: npm run verify
+
       - name: Validate release automation prerequisites
         if: vars.AUTO_PUBLISH_NPM == 'true'
         env:

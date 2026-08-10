@@ -1,31 +1,32 @@
 {
-  "name": "@wang121ye/skillmanager",
-  "version": "0.1.19",
-  "description": "Cross-platform agent skill manager (bootstrap + optional Web UI selection) built on top of openskills.",
+  "name": "skilltruck",
+  "version": "0.2.0",
+  "description": "Ship, install, update, and synchronize Agent Skills across coding agents.",
   "keywords": [
-    "skillmanager",
+    "skilltruck",
+    "skill-distribution",
     "openskills",
     "claude",
     "cursor",
     "skills",
     "agent"
   ],
-  "homepage": "https://github.com/wangyendt/skillmanager#readme",
+  "homepage": "https://github.com/wangyendt/skilltruck#readme",
   "bugs": {
-    "url": "https://github.com/wangyendt/skillmanager/issues"
+    "url": "https://github.com/wangyendt/skilltruck/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wangyendt/skillmanager.git"
+    "url": "git+https://github.com/wangyendt/skilltruck.git"
   },
   "publishConfig": {
     "access": "public"
   },
   "license": "MIT",
-  "author": "Wayne",
+  "author": "wang121ye",
   "type": "commonjs",
   "bin": {
-    "skillmanager": "src/cli.js"
+    "skilltruck": "src/cli.js"
   },
   "main": "src/index.js",
   "files": [
@@ -40,7 +41,11 @@
     "postinstall": "node src/postinstall.js",
     "test": "node --test",
     "agents:check": "node scripts/sync-supported-agents.js --check",
-    "agents:sync": "node scripts/sync-supported-agents.js --write"
+    "agents:sync": "node scripts/sync-supported-agents.js --write",
+    "pack:check": "node scripts/pack-check.js",
+    "smoke:install": "node scripts/install-smoke.js",
+    "verify": "npm run agents:check && npm test && npm run pack:check && npm run smoke:install",
+    "prepublishOnly": "npm run verify"
   },
   "dependencies": {
     "commander": "^13.1.0",

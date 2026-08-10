@@ -357,7 +357,7 @@ async function fetchSourceMarkdown({ sourceFile, sourceUrl }) {
 
   const response = await httpFetch(sourceUrl, {
     headers: {
-      'user-agent': 'skillmanager-agent-sync/1.0'
+      'user-agent': 'skilltruck-agent-sync/1.0'
     }
   });
   if (!response.ok) {

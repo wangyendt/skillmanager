@@ -46,9 +46,11 @@ async function bootstrap(opts, repoOrRef) {
   const existing = await loadProfile({ profilesDir: paths.profilesDir, profileName });
 
   // Selection path: clone repos + scan SKILL.md, then install selected skill dirs.
-  const concurrency = Number(opts?.concurrency || process.env.SKILLMANAGER_CONCURRENCY || 3);
+  const concurrency = Number(
+    opts?.concurrency || process.env.SKILLTRUCK_CONCURRENCY || process.env.SKILLMANAGER_CONCURRENCY || 3
+  );
   // eslint-disable-next-line no-console
-  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLMANAGER_CONCURRENCY 调整）`);
+  console.log(`并发扫描：${Math.max(1, concurrency)}（可用 --concurrency 或环境变量 SKILLTRUCK_CONCURRENCY 调整）`);
 
   const skillsById = new Map();
   const perSource = await mapWithConcurrency(enabledSources, concurrency, async (s) => {
@@ -85,7 +87,7 @@ async function bootstrap(opts, repoOrRef) {
       : allSkills.map((s) => s.id);
 
   const chosen = await promptSkillSelection({
-    title: `skillmanager install · profile=${profileName}`,
+    title: `skilltruck install · profile=${profileName}`,
     skills: allSkills,
     initialSelectedIds: selectedIds
   });
@@ -103,7 +105,7 @@ async function bootstrap(opts, repoOrRef) {
   if (!initialAgentIds.length) initialAgentIds = defaultAgentIds(agents);
 
   const chosenAgentIds = await promptSkillSelection({
-    title: `skillmanager install · agents · ${scope}`,
+    title: `skilltruck install · agents · ${scope}`,
     skills: buildAgentSelectionItems(agents),
     initialSelectedIds: initialAgentIds
   });

@@ -11,11 +11,11 @@ const repoDir = path.resolve(__dirname, '..');
 const cliPath = path.join(repoDir, 'src', 'cli.js');
 
 async function makeCliContext(t) {
-  const configRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'skillmanager-source-tombstone-'));
+  const configRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 'skilltruck-source-tombstone-'));
   t.after(async () => fsp.rm(configRoot, { recursive: true, force: true }));
   return {
     configRoot,
-    manifestPath: path.join(configRoot, 'skillmanager', 'sources.json'),
+    manifestPath: path.join(configRoot, 'skilltruck', 'sources.json'),
     env: { ...process.env, XDG_CONFIG_HOME: configRoot }
   };
 }

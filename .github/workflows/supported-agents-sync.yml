@@ -200,4 +200,4 @@ jobs:
             --pr-url "${{ steps.cpr.outputs.pull-request-url || steps.cpr_pat.outputs.pull-request-url }}" \
             --commit-url "${{ steps.direct_push.outputs.commit_url }}" \
             --run-url "${GITHUB_RUN_URL}" \
-            --title "skillmanager upstream agent sync"
+            --title "skilltruck upstream agent sync"

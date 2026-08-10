@@ -1,13 +1,13 @@
 {
-  "version": 4,
+  "version": 5,
   "sources": [
     {
-      "id": "skillmanager",
-      "name": "Skillmanager",
+      "id": "skilltruck",
+      "name": "SkillTruck",
       "kind": "git",
       "enabled": true,
-      "repo": "https://github.com/wangyendt/skillmanager.git",
-      "openskillsRef": "wangyendt/skillmanager"
+      "repo": "https://github.com/wangyendt/skilltruck.git",
+      "openskillsRef": "wangyendt/skilltruck"
     },
     {
       "id": "anthropic",

@@ -11,7 +11,7 @@ function htmlEscape(s) {
 }
 
 function buildHtml({ title }) {
-  const t = htmlEscape(title || 'skillmanager');
+  const t = htmlEscape(title || 'skilltruck');
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -57,7 +57,7 @@ function buildHtml({ title }) {
 </head>
 <body>
   <header>
-    <h1>skillmanager 选择要安装/卸载的内容</h1>
+    <h1>skilltruck 选择要安装/卸载的内容</h1>
     <div class="meta">左侧选择安装目标 agents，右侧按来源标签高效筛选 skills。</div>
   </header>
   <main>

@@ -7,10 +7,12 @@ const { getRemovedSourceIds } = require('./manifest');
 const builtinSourcesManifest = require('../../manifests/sources.json');
 const packageJson = require('../../package.json');
 
-const SELF_SOURCE_ID = 'skillmanager';
-const SELF_SKILL_RELATIVE_DIR = 'skills/skillmanager';
+const SELF_SOURCE_ID = 'skilltruck';
+const SELF_SKILL_RELATIVE_DIR = 'skills/skilltruck';
 const SELF_SKILL_ID = `${SELF_SOURCE_ID}:${SELF_SKILL_RELATIVE_DIR}`;
-const MIGRATION_KEY = 'skillmanagerSelfRegistration';
+const LEGACY_SELF_SOURCE_ID = 'skillmanager';
+const LEGACY_SELF_SKILL_ID = 'skillmanager:skills/skillmanager';
+const MIGRATION_KEY = 'skilltruckSelfRegistration';
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -68,21 +70,25 @@ function prepareSourcesManifest(manifest) {
 
   const selfSource = getBuiltinSelfSource();
   const removedSourceIds = getRemovedSourceIds(manifest);
-  if (removedSourceIds.has(SELF_SOURCE_ID)) {
+  const selfRemoved = removedSourceIds.has(SELF_SOURCE_ID) || removedSourceIds.has(LEGACY_SELF_SOURCE_ID);
+  const isSelfSource = (source) =>
+    isObject(source) && (source.id === SELF_SOURCE_ID || source.id === LEGACY_SELF_SOURCE_ID);
+  if (selfRemoved) {
+    const normalizedRemovedSourceIds = Array.from(new Set([...(manifest.removedSourceIds || []), SELF_SOURCE_ID]));
     return {
       ...manifest,
       version: Math.max(Number(manifest.version || 1), Number(builtinSourcesManifest.version || 1)),
-      sources: manifest.sources.filter((source) => !isObject(source) || source.id !== SELF_SOURCE_ID)
+      removedSourceIds: normalizedRemovedSourceIds,
+      sources: manifest.sources.filter((source) => !isSelfSource(source))
     };
   }
 
-  let found = false;
-  const sources = manifest.sources.map((source) => {
-    if (!isObject(source) || source.id !== SELF_SOURCE_ID) return source;
-    found = true;
-    return { ...source, ...selfSource, enabled: true };
-  });
-  if (!found) sources.push({ ...selfSource, enabled: true });
+  const selfEntries = manifest.sources.filter(isSelfSource);
+  const mergedSelf = Object.assign({}, ...selfEntries);
+  const firstSelfIndex = manifest.sources.findIndex(isSelfSource);
+  const sources = manifest.sources.filter((source) => !isSelfSource(source));
+  const insertionIndex = firstSelfIndex < 0 ? sources.length : Math.min(firstSelfIndex, sources.length);
+  sources.splice(insertionIndex, 0, { ...mergedSelf, ...selfSource, enabled: true });
 
   return {
     ...manifest,
@@ -117,10 +123,17 @@ async function readProfiles(profilesDir) {
 }
 
 function prepareProfile(profile, options = {}) {
-  if (options.registerSelf === false) return profile;
   const selectedSkillIds = Array.isArray(profile.selectedSkillIds) ? profile.selectedSkillIds : [];
-  if (selectedSkillIds.includes(SELF_SKILL_ID)) return profile;
-  return { ...profile, selectedSkillIds: [...selectedSkillIds, SELF_SKILL_ID] };
+  const next = [];
+  for (const id of selectedSkillIds) {
+    if (id === SELF_SKILL_ID || id === LEGACY_SELF_SKILL_ID) {
+      if (options.registerSelf !== false && !next.includes(SELF_SKILL_ID)) next.push(SELF_SKILL_ID);
+      continue;
+    }
+    if (!next.includes(id)) next.push(id);
+  }
+  if (options.registerSelf !== false && !next.includes(SELF_SKILL_ID)) next.push(SELF_SKILL_ID);
+  return sameJson(selectedSkillIds, next) ? profile : { ...profile, selectedSkillIds: next };
 }
 
 function prepareConfig(config, packageVersion) {
@@ -168,7 +181,9 @@ async function ensureSelfRegistration(options = {}) {
   const sourcesManifest = await readJsonFile(sourcesPath, builtinSourcesManifest);
   const profiles = await readProfiles(profilesDir);
   const nextSourcesManifest = prepareSourcesManifest(sourcesManifest);
-  const registerSelf = !getRemovedSourceIds(nextSourcesManifest).has(SELF_SOURCE_ID);
+  const removedSourceIds = getRemovedSourceIds(nextSourcesManifest);
+  const registerSelf =
+    !removedSourceIds.has(SELF_SOURCE_ID) && !removedSourceIds.has(LEGACY_SELF_SOURCE_ID);
   const nextProfiles = profiles.map(({ filePath, profile }) => ({
     filePath,
     profile,
@@ -201,6 +216,8 @@ function isGlobalNpmInstall(env = process.env) {
 }
 
 module.exports = {
+  LEGACY_SELF_SKILL_ID,
+  LEGACY_SELF_SOURCE_ID,
   SELF_SOURCE_ID,
   SELF_SKILL_ID,
   ensureSelfRegistration,

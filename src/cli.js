@@ -18,14 +18,14 @@ async function main() {
   } catch (err) {
     // npm lifecycle scripts may be disabled. Retry on CLI startup, but never
     // overwrite malformed local JSON or block unrelated commands.
-    console.warn('警告：未能自动补充 skillmanager 内置来源；现有配置未被覆盖。');
+    console.warn('警告：未能自动补充 skilltruck 内置来源；现有配置未被覆盖。');
     console.warn(err?.message || String(err));
   }
 
   const program = new Command();
 
   program
-    .name('skillmanager')
+    .name('skilltruck')
     .description('跨平台 Agent Skills 管理器（基于 openskills）')
     .version(require('../package.json').version);
 
@@ -39,7 +39,7 @@ async function main() {
     .option('--sync', '执行 openskills sync（默认不执行）', false)
     .option('--dry-run', '仅打印将执行的内容，不实际安装', false)
     .option('--concurrency <n>', '选择模式下的并发扫描数（默认：3）', '3')
-    .option('--profile <name>', '选择配置名（默认：来自 config 或 SKILLMANAGER_PROFILE 环境变量）')
+    .option('--profile <name>', '选择配置名（默认：来自 config 或 SKILLTRUCK_PROFILE 环境变量）')
     .option('--force-refresh', '强制刷新来源仓库缓存（重新拉取）', false)
     .action(async (repoOrRef, opts) => {
       await bootstrap(opts, repoOrRef);
@@ -62,7 +62,7 @@ async function main() {
 
   program
     .command('paths')
-    .description('打印 skillmanager 的配置/缓存目录，以及 sources.json 位置。')
+    .description('打印 skilltruck 的配置/缓存目录，以及 sources.json 位置。')
     .action(async () => {
       await where();
     });
@@ -109,7 +109,7 @@ async function main() {
   config
     .command('set-remote-profile-url')
     .description('设置远端 profile URL（用于 config push/pull）。')
-    .argument('<url>', '例如 https://<bucket>.<region>.aliyuncs.com/skillmanager/')
+    .argument('<url>', '例如 https://<bucket>.<region>.aliyuncs.com/skilltruck/')
     .action(async (url) => {
       await setRemoteProfileUrlCmd(url);
     });
@@ -118,7 +118,7 @@ async function main() {
     .command('push')
     .description('上传某个 profile 到远端 URL（HTTP PUT）。')
     .option('--profile <name>', 'profile 名称（默认：default）', 'default')
-    .option('--url <url>', '远端 URL（可省略，使用 config.remoteProfileUrl 或 SKILLMANAGER_PROFILE_URL）')
+    .option('--url <url>', '远端 URL（可省略，使用 config.remoteProfileUrl 或 SKILLTRUCK_PROFILE_URL）')
     .action(async (opts) => {
       await pushProfileCmd(opts);
     });
@@ -127,7 +127,7 @@ async function main() {
     .command('pull')
     .description('从远端 URL 下载 profile 并保存到本地（HTTP GET）。')
     .option('--profile <name>', 'profile 名称（默认：default）', 'default')
-    .option('--url <url>', '远端 URL（可省略，使用 config.remoteProfileUrl 或 SKILLMANAGER_PROFILE_URL）')
+    .option('--url <url>', '远端 URL（可省略，使用 config.remoteProfileUrl 或 SKILLTRUCK_PROFILE_URL）')
     .action(async (opts) => {
       await pullProfileCmd(opts);
     });

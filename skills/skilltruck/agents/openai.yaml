@@ -1,0 +1,4 @@
+interface:
+  display_name: "SkillTruck"
+  short_description: "Ship and manage skills across coding agents"
+  default_prompt: "Use $skilltruck to install and synchronize the requested Agent Skills."

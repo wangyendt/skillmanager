@@ -72,7 +72,7 @@ async function warnPrereqs({ needGit = false, needOpenSkills = false } = {}) {
       lines.push(
         `- git：检测到 ${fmt(gitV)}，建议至少 ${fmt(MIN_GIT)}。低版本在 GitHub HTTPS/partial clone 场景下可能出现 TLS/gnutls 握手中断（例如 gnutls_handshake）。`
       );
-      lines.push('  - 建议：升级 git（或设置 `SKILLMANAGER_GIT_PROTOCOL=ssh` 使用 SSH 拉取；并避免开启 partial clone filter）。');
+      lines.push('  - 建议：升级 git（或设置 `SKILLTRUCK_GIT_PROTOCOL=ssh` 使用 SSH 拉取；并避免开启 partial clone filter）。');
     }
   }
 
@@ -94,7 +94,7 @@ async function warnPrereqs({ needGit = false, needOpenSkills = false } = {}) {
 
   if (lines.length) {
     // eslint-disable-next-line no-console
-    console.warn(['\n⚠️ 环境兼容性提示（skillmanager）', ...lines, ''].join('\n'));
+    console.warn(['\n⚠️ 环境兼容性提示（skilltruck）', ...lines, ''].join('\n'));
   }
 }
 

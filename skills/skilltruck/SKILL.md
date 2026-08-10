@@ -1,16 +1,16 @@
 ---
-name: skillmanager
-description: Manage Agent Skills with the skillmanager CLI across Claude Code, Codex, Cursor, and other supported agents. Use this skill whenever the user mentions skillmanager, installing or updating skills, project/global skill scope, skill sources, profiles, Web UI selection, or syncing AGENTS.md—even if they do not explicitly ask to use the skillmanager command.
+name: skilltruck
+description: Manage Agent Skills with the SkillTruck (formerly SkillManager) CLI across Claude Code, Codex, Cursor, and other supported agents. Use whenever the user mentions skilltruck or skillmanager, installs or updates skills, chooses project/global scope, manages skill sources or profiles, uses Web UI selection, or syncs AGENTS.md.
 ---
 
-# Skillmanager
+# SkillTruck
 
-Use `skillmanager` to install, update, remove, and synchronize Agent Skills across supported agents while preserving the user's sources and saved selections.
+Use `skilltruck` to install, update, remove, and synchronize Agent Skills across supported agents while preserving the user's sources and saved selections.
 
 ## Start safely
 
-1. Run `skillmanager paths` when you need to locate the active configuration, cache, or profile directory.
-2. Run `skillmanager source list` before changing sources so you can preserve existing entries and enabled states.
+1. Run `skilltruck paths` when you need to locate the active configuration, cache, or profile directory.
+2. Run `skilltruck source list` before changing sources so you can preserve existing entries and enabled states.
 3. Distinguish the target scope:
    - Project scope installs into agent directories under the current project and is the default.
    - Global scope uses `--global` and installs into the user's global agent directories.
@@ -21,9 +21,9 @@ Use `skillmanager` to install, update, remove, and synchronize Agent Skills acro
 ### Install skills
 
 ```bash
-skillmanager install
-skillmanager install --global
-skillmanager install owner/repo
+skilltruck install
+skilltruck install --global
+skilltruck install owner/repo
 ```
 
 Passing `owner/repo` or a GitHub URL registers that source and installs from it. Use `--dry-run` when the user wants a preview.
@@ -31,9 +31,9 @@ Passing `owner/repo` or a GitHub URL registers that source and installs from it.
 ### Use the Web UI
 
 ```bash
-skillmanager webui
-skillmanager webui --global
-skillmanager webui --mode uninstall
+skilltruck webui
+skilltruck webui --global
+skilltruck webui --mode uninstall
 ```
 
 Use the Web UI when the user wants to search, filter by source, or select many skills and agents visually.
@@ -41,23 +41,23 @@ Use the Web UI when the user wants to search, filter by source, or select many s
 ### Manage sources
 
 ```bash
-skillmanager source list
-skillmanager source add owner/repo
-skillmanager source enable <id>
-skillmanager source disable <id>
-skillmanager source remove <id>
+skilltruck source list
+skilltruck source add owner/repo
+skilltruck source enable <id>
+skilltruck source disable <id>
+skilltruck source remove <id>
 ```
 
 Add or update only the requested source. Do not replace the whole `sources.json`, because it may contain unrelated private or custom repositories.
-Built-in sources may be removed; skillmanager preserves that choice in `removedSourceIds`. Adding the same built-in repository again restores its original ID; sources that used a custom ID must be restored with the same `--id`. Disabling a source keeps it configured but excludes it from installation and update workflows.
+Built-in sources may be removed; skilltruck preserves that choice in `removedSourceIds`. Adding the same built-in repository again restores its original ID; sources that used a custom ID must be restored with the same `--id`. Disabling a source keeps it configured but excludes it from installation and update workflows.
 
 ### Update or uninstall
 
 ```bash
-skillmanager update
-skillmanager update --global
-skillmanager uninstall <skill-name>
-skillmanager uninstall <skill-name> --global
+skilltruck update
+skilltruck update --global
+skilltruck uninstall <skill-name>
+skilltruck uninstall <skill-name> --global
 ```
 
 Confirm scope and skill names before uninstalling. Use `--all` only when the user explicitly asks to remove every skill in the target scope.
@@ -65,9 +65,9 @@ Confirm scope and skill names before uninstalling. Use `--all` only when the use
 ### Work with profiles
 
 ```bash
-skillmanager config show
-skillmanager config set-default-profile <name>
-skillmanager install --profile <name>
+skilltruck config show
+skilltruck config set-default-profile <name>
+skilltruck install --profile <name>
 ```
 
 Profiles remember selected skills and selected agents. Preserve existing `selectedSkillIds` and `selectedAgentIdsByScope` when modifying profile files.

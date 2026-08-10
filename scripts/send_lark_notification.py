@@ -14,13 +14,13 @@ def parse_args():
     parser.add_argument("--commit-url", default="", help="Commit URL")
     parser.add_argument("--run-url", default="", help="GitHub Actions run URL")
     parser.add_argument("--mode", default="pr", help="Workflow mode: direct / pr / notify")
-    parser.add_argument("--title", default="skillmanager upstream agent sync", help="Card title")
+    parser.add_argument("--title", default="skilltruck upstream agent sync", help="Card title")
     return parser.parse_args()
 
 
 def build_markdown(summary, repo, pr_url, commit_url, run_url, mode):
     lines = [
-        f"# {repo or 'skillmanager'} upstream agent sync",
+        f"# {repo or 'skilltruck'} upstream agent sync",
         "",
         f"- Mode: `{mode}`",
         f"- Retrieved at: `{summary.get('retrievedAt', '-')}`",
