@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      # Runtime implementation and public CLI/API.
+      - src/**
+      # Runtime manifests and bundled companion skill.
+      - manifests/**
+      - skills/**
+      # Runtime dependencies and npm package metadata.
+      - package.json
+      - package-lock.json
   workflow_dispatch:
 
 concurrency:

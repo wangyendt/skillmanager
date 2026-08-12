@@ -39,7 +39,7 @@ Automation:
   - `LARK_CHAT_ID` or `LARK_USER_OPEN_ID`
 - Auto npm publish is also optional. Set repository variable `AUTO_BUMP_NPM_VERSION=true` to patch-bump during sync, and set `AUTO_PUBLISH_NPM=true` to enable publishing when `package.json` or `package-lock.json` changes on `main`.
 - If `AUTO_PUBLISH_NPM=true`, also provide GitHub secret `GH_PAT`. The PAT is used for version-bump pushes so GitHub can trigger the downstream `publish-npm.yml` workflow.
-- Normal `main` pushes are also covered: if a push does not already change the package version, `release-on-main.yml` will patch-bump `package.json` and `package-lock.json`, push that commit back to `main` using `GH_PAT`, and let `publish-npm.yml` publish the new version.
+- Core `main` pushes are also covered: changes under `src/**`, `manifests/**`, `skills/**`, or to `package.json`/`package-lock.json` trigger `release-on-main.yml`. If such a push does not already change the package version, the workflow patch-bumps `package.json` and `package-lock.json`, pushes that commit back to `main` using `GH_PAT`, and lets `publish-npm.yml` publish the new version. README, docs, tests, maintenance scripts, screenshots, and workflow-only changes do not publish npm by themselves; use the workflow's manual dispatch when one of those changes must be released immediately.
 - npm publishing now uses npm trusted publishing (OIDC) from GitHub Actions. Configure the package-level trusted publisher on npm for:
   - GitHub owner: `wangyendt`
   - Repository: `skilltruck`
