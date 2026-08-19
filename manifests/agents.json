@@ -4,7 +4,7 @@
     "repo": "https://github.com/vercel-labs/skills",
     "section": "Supported Agents",
     "license": "MIT",
-    "retrievedAt": "2026-07-31"
+    "retrievedAt": "2026-08-19"
   },
   "agents": [
     {
@@ -348,6 +348,12 @@
       "name": "Pi",
       "projectPath": ".pi/skills",
       "globalPath": "~/.pi/agent/skills"
+    },
+    {
+      "id": "posit-assistant",
+      "name": "Posit Assistant",
+      "projectPath": ".posit/assistant/skills",
+      "globalPath": "~/.posit/assistant/skills"
     },
     {
       "id": "qoder",
